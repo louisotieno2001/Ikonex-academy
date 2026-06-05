@@ -9,6 +9,7 @@ import {
   BookOpen,
   ClipboardCheck,
   FileText,
+  CalendarCheck,
   LogOut,
   Menu,
   X,
@@ -25,6 +26,7 @@ const navItems = [
   { path: "/dashboard/subjects", label: "Subjects", icon: BookOpen },
   { path: "/dashboard/assessments", label: "Assessments", icon: ClipboardCheck },
   { path: "/dashboard/reports", label: "Reports", icon: FileText },
+  { path: "/dashboard/attendance", label: "Attendance", icon: CalendarCheck },
   { path: "/dashboard/users", label: "Users", icon: Users, role: "admin" },
 ];
 

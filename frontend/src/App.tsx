@@ -10,6 +10,7 @@ import { SubjectsPage } from "./modules/subjects";
 import { AssessmentsPage } from "./modules/assessments";
 import { ReportsPage } from "./modules/reports";
 import { LogsPage } from "./modules/system";
+import { AttendancePage } from "./modules/attendance";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="subjects" element={<SubjectsPage />} />
         <Route path="assessments" element={<AssessmentsPage />} />
         <Route path="reports" element={<ReportsPage />} />
+        <Route path="attendance" element={<AttendancePage />} />
         <Route path="users" element={<UserManagementPage />} />
         <Route path="logs" element={<LogsPage />} />
       </Route>

@@ -1,10 +1,13 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { classStreamsApi } from "../../../api/classStreams";
 import { studentsApi } from "../../../api/students";
 import { subjectsApi } from "../../../api/subjects";
+import { assessmentsApi } from "../../../api/assessments";
+import { attendanceApi } from "../../../api/attendance";
 import { systemApi } from "../../../api/system";
 import { Link } from "react-router-dom";
-import { Users, GraduationCap, BookOpen, ArrowRight, Shield, Award, TrendingUp, FileText, Server, Activity, UserPlus, Database, Clock, List } from "lucide-react";
+import { Users, GraduationCap, BookOpen, ArrowRight, Shield, Award, TrendingUp, FileText, Server, Activity, UserPlus, Database, Clock, List, CalendarCheck } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useAuth } from "../../../contexts/AuthContext";
 
@@ -25,6 +28,30 @@ export default function Dashboard() {
 
   const teacherClass = classes?.find(c => c.id === user?.assignedClasses?.[0]);
   const classStudents = students?.filter(s => s.classStreamId === user?.assignedClasses?.[0]) || [];
+
+  const now2 = new Date();
+  const defaultYear = now2.getMonth() >= 8 ? `${now2.getFullYear()}/${now2.getFullYear() + 1}` : `${now2.getFullYear() - 1}/${now2.getFullYear()}`;
+
+  const { data: teacherAttendance } = useQuery({
+    queryKey: ["attendance", "stats", user?.assignedClasses?.[0], "term1", defaultYear],
+    queryFn: () => attendanceApi.getStats({ classStreamId: user?.assignedClasses?.[0]!, term: "term1", academicYear: defaultYear }).then((r) => r.data),
+    enabled: isTeacher && !!user?.assignedClasses?.[0],
+  });
+
+  const { data: allAssessments } = useQuery({
+    queryKey: ["assessments", "all", "term1", defaultYear],
+    queryFn: () => assessmentsApi.getAll({ term: "term1", academicYear: defaultYear }).then((r) => r.data),
+    enabled: isTeacher,
+  });
+
+  const scorePct = useMemo(() => {
+    if (!isTeacher || !classStudents.length || !subjects?.length || !allAssessments) return 0;
+    const totalExpected = classStudents.length * subjects.length * 2;
+    const classAssessments = allAssessments.filter((a) =>
+      classStudents.some((s) => s.id === a.studentId)
+    );
+    return totalExpected > 0 ? Math.round((classAssessments.length / totalExpected) * 100) : 0;
+  }, [isTeacher, classStudents, subjects, allAssessments]);
 
   const stats = isAdmin ? [
     { label: "Class Streams", value: classes?.length || 0, icon: Users, color: "bg-brand-500", href: "/dashboard/class-streams" },
@@ -117,9 +144,18 @@ export default function Dashboard() {
                     <span className="text-xs font-medium text-muted-foreground">Student Attendance</span>
                     <TrendingUp className="w-4 h-4 text-emerald-500" />
                   </div>
-                  <div className="text-2xl font-bold">98%</div>
+                  <div className="text-2xl font-bold">{teacherAttendance?.percentage ?? 0}%</div>
                   <div className="w-full bg-muted h-1.5 rounded-full mt-3">
-                    <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '98%' }}></div>
+                    <div
+                      className="h-1.5 rounded-full transition-all"
+                      style={{
+                        width: `${teacherAttendance?.percentage ?? 0}%`,
+                        backgroundColor: (teacherAttendance?.percentage ?? 0) >= 75 ? '#10b981' : (teacherAttendance?.percentage ?? 0) >= 50 ? '#f59e0b' : '#ef4444',
+                      }}
+                    ></div>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-1.5">
+                    {teacherAttendance?.present ?? 0} present / {teacherAttendance?.absent ?? 0} absent
                   </div>
                 </div>
                 <div className="p-4 rounded-xl bg-background border border-border shadow-sm">
@@ -127,9 +163,18 @@ export default function Dashboard() {
                     <span className="text-xs font-medium text-muted-foreground">Scores Recorded</span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700 font-bold">Term 1</span>
                   </div>
-                  <div className="text-2xl font-bold">85%</div>
+                  <div className="text-2xl font-bold">{scorePct}%</div>
                   <div className="w-full bg-muted h-1.5 rounded-full mt-3">
-                    <div className="bg-brand-500 h-1.5 rounded-full" style={{ width: '85%' }}></div>
+                    <div
+                      className="h-1.5 rounded-full transition-all"
+                      style={{
+                        width: `${scorePct}%`,
+                        backgroundColor: scorePct >= 75 ? '#10b981' : scorePct >= 50 ? '#f59e0b' : '#ef4444',
+                      }}
+                    ></div>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-1.5">
+                    {allAssessments?.filter((a) => classStudents.some((s) => s.id === a.studentId)).length ?? 0} of {classStudents.length * (subjects?.length ?? 0) * 2} expected
                   </div>
                 </div>
               </div>
@@ -156,6 +201,7 @@ export default function Dashboard() {
                 { label: "Register Student", href: "/dashboard/students", desc: "Add student to class", role: null },
                 { label: "User Management", href: "/dashboard/users", desc: "Manage staff & roles", role: "admin" },
                 { label: "Record Scores", href: "/dashboard/assessments", desc: "Enter exam/CA marks", role: null },
+                { label: "Mark Attendance", href: "/dashboard/attendance", desc: "Track student attendance", role: null },
                 { label: "Report Cards", href: "/dashboard/reports", desc: "Generate PDF reports", role: null },
               ].filter(a => !a.role || a.role === user?.role).map((action) => (
                 <Link
