@@ -58,14 +58,17 @@
 
         <div class="section-card">
           <h2>Quick Start</h2>
-          <pre><code># 1. Clone and enter the project
+          <pre><code># 1. Clone repository
+git clone https://github.com/louisotieno2001/Ikonex-academy.git 
+            
+# 2. Enter the project
 cd ikonex-academy
 
-# 2. Copy environment file and edit secrets (tokens, passwords)
+# 3. Copy environment file and edit secrets (tokens, passwords)
 cp .env.example .env
 
-# 3. Start all services
-docker compose up -d --build</code></pre>
+# 4. Start all services
+docker compose up -d --build(or with privileges as per your setup)</code></pre>
           <p>This starts PostgreSQL, Directus (port 9000), the Express backend (port 9002), and the React frontend (port 9001).</p>
           <p><strong>Wait ~30 seconds</strong> for Directus to finish its first-time setup, then:</p>
           <ul>
@@ -85,6 +88,10 @@ docker compose up -d --build</code></pre>
             <li>Ensure the <code>users</code> collection has fields: <code>firstName</code>, <code>lastName</code>, <code>email</code> (unique), <code>password</code> (string), <code>role</code> (string), <code>assignedClasses</code> (JSON), <code>suspend</code> (boolean)</li>
           </ol>
           <p>Refer to the <strong>Directus → Collections</strong> pane in the sidebar for detailed field schemas.</p>
+          <h2>Faster Setup Using Snapshot File</h2>
+          <p>Alternatively, you can apply the provided <code>snapshot.yaml</code> file in the root of the project to the directus service to automatically create all collections, fields, and permissions. To do this:</p>
+          <pre><code>docker cp snapshot.yaml directus:/snapshot.yaml</code></pre>
+          <pre><code>docker exec -it directus sh -c "npx directus snapshot apply /snapshot.yaml"</code></pre>
         </div>
 
         <div class="section-card">
@@ -131,29 +138,6 @@ npm run typecheck</code></pre>
             <li><strong>System Monitoring</strong> — Live telemetry with Directus connection status, uptime, and recent signups</li>
           </ul>
         </div>
-
-        <div class="grid-2">
-          <div class="card" style="cursor:pointer" onclick="switchPane('frontend-intro')">
-            <div class="icon-wrap" style="background:#05966933;color:#6ee7b7"><i data-lucide="monitor"></i></div>
-            <h3>Frontend</h3>
-            <p>React 18 SPA — TypeScript, Vite, Tailwind CSS. 14 subsections covering App.tsx through nginx.conf.</p>
-          </div>
-          <div class="card" style="cursor:pointer" onclick="switchPane('backend-intro')">
-            <div class="icon-wrap" style="background:#0d737733;color:#34d399"><i data-lucide="server"></i></div>
-            <h3>Backend</h3>
-            <p>Express.js API server — Directus proxy pattern. 11 subsections from app.js to package.json.</p>
-          </div>
-          <div class="card" style="cursor:pointer" onclick="switchPane('directus-intro')">
-            <div class="icon-wrap" style="background:#d9770633;color:#fbbf24"><i data-lucide="database"></i></div>
-            <h3>Directus</h3>
-            <p>Headless CMS data layer — collections, fields, relationships, and permissions explained in detail.</p>
-          </div>
-          <div class="card" style="cursor:pointer" onclick="switchPane('postgresql-intro')">
-            <div class="icon-wrap" style="background:#6366f133;color:#a5b4fc"><i data-lucide="hard-drive"></i></div>
-            <h3>PostgreSQL</h3>
-            <p>Database 16 — Docker setup, complete schema with every collection, field, and relationship.</p>
-          </div>
-        </div>
       </div>
 
       <!-- ====================================================== -->
@@ -172,16 +156,16 @@ npm run typecheck</code></pre>
           <h2>Tech Justification</h2>
 
           <h3>React 18 over Vue, Svelte, or Angular</h3>
-          <p>React has the largest ecosystem, best TypeScript integration, and the most community resources. The team was already familiar with React, eliminating the learning curve. React 18's automatic batching and concurrent features provide performance improvements without API changes. The component model maps naturally to the school management domain (a page is a component, a table is a component, a form is a component).</p>
+          <p>React has the largest ecosystem, best TypeScript integration, and the most community resources. I was already familiar with React, eliminating the learning curve. React 18's automatic batching and concurrent features provide performance improvements without API changes. The component model maps naturally to the school management domain (a page is a component, a table is a component, a form is a component).</p>
 
           <h3>TypeScript over JavaScript</h3>
           <p>The backend returns structured JSON responses (student records, assessment arrays, attendance objects). TypeScript interfaces for these responses catch mismatches at compile time: if the backend changes a field name, the TypeScript compiler immediately shows every frontend location that references it. This is invaluable for a project with 9+ API client modules and 40+ components.</p>
 
           <h3>Vite over Create React App (CRA) or Next.js</h3>
-          <p>Vite's native ESM dev server starts instantly (under 1 second) and provides hot module replacement that doesn't degrade as the codebase grows. CRA was the previous standard but suffers from slow rebuilds on larger projects. Next.js was considered unnecessary because this is a pure SPA — there is no SEO requirement, no SSR need, and no server-side data fetching that would justify Next.js's complexity.</p>
+          <p>Vite's native ESM dev server starts instantly (under 1 second) and provides hot module replacement that doesn't degrade as the codebase grows. CRA was the previous standard but suffers from slow rebuilds on larger projects. Next.js was considered unnecessary because this is a pure SPA there is no SEO requirement, no SSR need, and no server-side data fetching that would justify Next.js's complexity.</p>
 
           <h3>Tailwind CSS over styled-components or CSS Modules</h3>
-          <p>Tailwind's utility-first approach means styles are colocated with markup, reducing context switching. The design system (colors, spacing, typography) is defined once in <code>tailwind.config.js</code> and enforced across every component. Dark mode is handled by a single <code>.dark</code> class on <code>&lt;html&gt;</code> that overrides CSS custom properties — no runtime CSS-in-JS overhead.</p>
+          <p>Tailwind's utility-first approach means styles are colocated with markup, reducing context switching. The design system (colors, spacing, typography) is defined once in <code>tailwind.config.js</code> and enforced across every component. Dark mode is handled by a single <code>.dark</code> class on <code>&lt;html&gt;</code> that overrides CSS custom properties — no runtime CSS-in-JS overhead. Inspiration drawn from Tweakcn( <a href="https://tweakcn.com/" target="_blank">https://tweakcn.com/</a> )</p>
 
           <h3>TanStack Query over Redux or manual state management</h3>
           <p>TanStack Query handles server state (data fetched from the API) with automatic caching, background refetching, and request deduplication. If two components request the same list of students, TanStack Query sends only one HTTP request. Mutations (create/update/delete) automatically invalidate related queries to keep the UI consistent. This eliminates the boilerplate of Redux reducers, action creators, and manual loading/error state tracking.</p>
@@ -492,20 +476,20 @@ npm run typecheck</code></pre>
         <div class="section-card">
           <h2>Tech Justification</h2>
 
-          <h3>Express over Fastify, NestJS, or Hapi</h3>
-          <p>Express was chosen for its simplicity, zero-configuration setup, and vast ecosystem. The API surface is straightforward — it exposes CRUD endpoints for students, subjects, assessments, attendance, and class streams, plus a few computation endpoints for reports and rankings. Express's minimalist approach means there's no unnecessary abstraction: a controller is a function, a route is a method call, a middleware is a function. This makes the code easy to trace and debug. NestJS was considered too opinionated for a project of this scope — its module/controller/service/decorator pattern would add boilerplate without proportional benefit. Fastify is faster on paper but the difference is negligible at this scale, and Express has better community support.</p>
+          <h3>Express over Fastify, NestJS e.t.c</h3>
+          <p>Express was chosen for its simplicity, zero-configuration setup, and vast ecosystem. The API surface is straightforward. It exposes CRUD endpoints for students, subjects, assessments, attendance, and class streams, plus a few computation endpoints for reports and rankings. Express's minimalist approach means there's no unnecessary abstraction: a controller is a function, a route is a method call, a middleware is a function. This makes the code easy to trace and debug. NestJS was considered too opinionated for a project of this scope. Its module/controller/service/decorator pattern would add boilerplate without proportional benefit. Fastify is faster on paper but the difference is negligible at this scale, and Express has better community support.</p>
 
           <h3>Directus proxy pattern (Express ↔ Directus ↔ PostgreSQL)</h3>
           <p>Rather than embedding database queries directly in the backend, the Express server delegates all data operations to Directus through its REST API. This means the backend never writes raw SQL, never manages connection pools, and never handles schema migrations. Directus provides the admin panel for schema changes, the authentication layer, the permission system, and the file storage API. The Express backend focuses purely on business logic: validating input, computing grades, generating PDFs, and normalizing response shapes for the frontend.</p>
 
           <h3>JWT over session-based auth</h3>
-          <p>JWT tokens are stateless — the server does not need to store session data in memory or a database. The token itself contains the user ID, email, and role, so every authenticated request carries all the information needed for authorization. Access tokens are short-lived (15 minutes by default) for security. A longer-lived refresh token (7 days) allows the frontend to obtain new access tokens without requiring the user to re-login. This pattern works well for SPAs where the frontend stores the token in localStorage and sends it with every request via an Axios interceptor.</p>
+          <p>JWT tokens are stateless. The server does not need to store session data in memory or a database. The token itself contains the user ID, email, and role, so every authenticated request carries all the information needed for authorization. Access tokens are short-lived (15 minutes by default) for security. A longer-lived refresh token (7 days) allows the frontend to obtain new access tokens without requiring the user to re-login. This pattern works well for SPAs where the frontend stores the token in localStorage and sends it with every request via an Axios interceptor.</p>
 
           <h3>PDFKit over Puppeteer or wkhtmltopdf</h3>
-          <p>PDFKit generates PDFs programmatically by drawing text, lines, and shapes on a canvas. This avoids the overhead of launching a headless browser (Puppeteer) or rendering HTML to PDF (wkhtmltopdf). For structured documents like report cards — which have a fixed layout with a header table, a subject rows table, a totals row, and signature lines — PDFKit's imperative drawing model maps directly to the output. Puppeteer would be overkill and slower, especially in a containerized environment where Chrome may not be installed.</p>
+          <p>PDFKit generates PDFs programmatically by drawing text, lines, and shapes on a canvas. This avoids the overhead of launching a headless browser (Puppeteer) or rendering HTML to PDF (wkhtmltopdf). For structured documents like report cards, which have a fixed layout with a header table, a subject rows table, a totals row, and signature lines, PDFKit's imperative drawing model maps directly to the output. Puppeteer would be overkill and slower, especially in a containerized environment where Chrome may not be installed.</p>
 
           <h3>EJS over React SSR or plain HTML strings</h3>
-          <p>For the documentation pages served at <code>/</code> and <code>/docs</code>, EJS provides server-rendered templates without requiring the React build pipeline. These pages are simple informational content — they don't need reactivity, client-side state, or API calls. EJS templates are compiled once at server start and rendered on each request with the current data (Directus status, etc.), making them efficient and lightweight.</p>
+          <p>For the documentation pages served at <code>/</code> and <code>/docs</code>, EJS provides server-rendered templates without requiring the React build pipeline. These pages are simple informational content, they don't need reactivity, client-side state, or API calls. EJS templates are compiled once at server start and rendered on each request with the current data (Directus status, etc.), making them efficient and lightweight.</p>
         </div>
       </div>
 
@@ -735,7 +719,15 @@ app.use('/', docsRoutes);  // / and /docs (no auth required)</code></pre>
           <p>Sanity and Contentful are excellent SaaS products, but this project requires self-hosting. The school's data (student records, exam scores, attendance) is sensitive and should not leave the school's infrastructure. Directus is free, open-source, and self-hosted — no per-seat licensing, no data egress fees, and full control over backups and uptime.</p>
 
           <h3>Directus over writing custom CRUD code</h3>
-          <p>Without Directus, we would need to write: (1) database migration scripts for every schema change, (2) CRUD endpoints for every collection (students, subjects, assessments, attendance, etc.), (3) an admin panel for data browsing and schema management, (4) an authentication system with user management, and (5) a permission system for role-based access. Directus provides all of this out of the box. The Express backend only needs to implement the business logic that Directus cannot express (grade computation, PDF generation, ranking).</p>
+          <p>Without Directus, we would need to write: 
+            <ol>
+              <li>Database migration scripts for every schema change,</li>
+              <li>CRUD endpoints for every collection (students, subjects, assessments, attendance, etc.),</li>
+              <li>An admin panel for data browsing and schema management,</li>
+              <li>An authentication system with user management,</li>
+              <li>A permission system for role-based access.</li>
+            </ol>
+            Directus provides all of this out of the box. The Express backend only needs to implement the business logic that Directus cannot express (grade computation, PDF generation, ranking).</p>
         </div>
       </div>
 
@@ -744,8 +736,8 @@ app.use('/', docsRoutes);  // / and /docs (no auth required)</code></pre>
           <h2>Directus Collections</h2>
           <p>Each collection must be created manually through the Directus admin panel at <code>/admin/settings/data-model</code>. The backend service account (identified by <code>DIRECTUS_TOKEN</code>) needs full CRUD permissions on all <code>items/*</code> endpoints — create, read, update, delete.</p>
 
-          <h3>1. <code>directus_users</code></h3>
-          <p>Built-in Directus collection for user accounts. Extended with custom fields:</p>
+          <h3>1. <code>users</code></h3>
+          <p>Collection for user accounts:</p>
           <table>
             <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
             <tr><td><code>id</code></td><td>uuid (PK, auto)</td><td></td></tr>
@@ -866,7 +858,7 @@ app.use('/', docsRoutes);  // / and /docs (no auth required)</code></pre>
             <tr><td><code>term</code></td><td>string</td><td><code>term1</code>, <code>term2</code>, or <code>term3</code></td></tr>
             <tr><td><code>academicYear</code></td><td>string</td><td>e.g. <code>"2025/2026"</code></td></tr>
             <tr><td><code>isLastDay</code></td><td>boolean</td><td>Flag indicating this date is the last school day of the term</td></tr>
-            <tr><td><code>markedBy</code></td><td>uuid (m2o)</td><td>Relation to <code>directus_users</code> — the teacher who recorded attendance</td></tr>
+            <tr><td><code>markedBy</code></td><td>uuid (m2o)</td><td>Relation to <code>users</code> — the teacher who recorded attendance</td></tr>
           </table>
           <p><strong>Uniqueness:</strong> <code>[studentId + date]</code> — each student has at most one record per day.</p>
 
@@ -878,7 +870,7 @@ app.use('/', docsRoutes);  // / and /docs (no auth required)</code></pre>
             <tr><td><code>action</code></td><td>string</td><td>e.g. <code>"login"</code>, <code>"signup"</code>, <code>"update_role"</code></td></tr>
             <tr><td><code>description</code></td><td>text</td><td>Human-readable description of what happened</td></tr>
             <tr><td><code>level</code></td><td>string</td><td><code>info</code>, <code>warn</code>, or <code>error</code></td></tr>
-            <tr><td><code>userId</code></td><td>uuid (m2o)</td><td>Relation to <code>directus_users</code> — the user who performed the action</td></tr>
+            <tr><td><code>userId</code></td><td>uuid (m2o)</td><td>Relation to <code>users</code> — the user who performed the action</td></tr>
           </table>
 
           <h3>Relationship Summary</h3>
@@ -888,10 +880,10 @@ app.use('/', docsRoutes);  // / and /docs (no auth required)</code></pre>
                               │
                               └── attendance
                                           │
-                         directus_users ──┘ (markedBy)
+                         users ──┘ (markedBy)
 
 grading_scale (standalone, referenced by reports controller)
-system_logs ──── directus_users (userId)</code></pre>
+system_logs ──── users (userId)</code></pre>
         </div>
       </div>
 
@@ -914,7 +906,7 @@ system_logs ──── directus_users (userId)</code></pre>
           <p>Admin access is enforced by the <code>requireRole('admin')</code> middleware on specific routes (user management, class/subject creation).</p>
 
           <h3>3. Teacher Users (role: <code>teacher</code>)</h3>
-          <p>Teachers are scoped to their assigned classes, stored in the <code>assignedClasses</code> JSON array on their <code>directus_users</code> record. When a teacher makes a request, the backend:</p>
+          <p>Teachers are scoped to their assigned classes, stored in the <code>assignedClasses</code> JSON array on their <code>users</code> record. When a teacher makes a request, the backend:</p>
           <ul>
             <li>Reads <code>req.user.email</code> from the JWT payload</li>
             <li>Looks up the teacher's <code>assignedClasses</code> array from Directus</li>
@@ -972,7 +964,7 @@ system_logs ──── directus_users (userId)</code></pre>
           <h2>PostgreSQL Schema</h2>
           <p>The schema matches the Directus collections exactly — Directus creates and manages the underlying PostgreSQL tables. Below is the complete schema with every table, column, type, and constraint.</p>
 
-          <h3>1. <code>directus_users</code> (Managed by Directus + custom fields)</h3>
+          <h3>1. <code>users</code> (Managed by Directus + custom fields)</h3>
           <p>Built-in user table extended with custom fields for the school management system.</p>
           <table>
             <tr><th>Column</th><th>Type</th><th>Constraints</th></tr>
@@ -1072,7 +1064,7 @@ system_logs ──── directus_users (userId)</code></pre>
             <tr><td><code>term</code></td><td><code>varchar(20)</code></td><td>NOT NULL</td></tr>
             <tr><td><code>academicYear</code></td><td><code>varchar(20)</code></td><td>NOT NULL</td></tr>
             <tr><td><code>isLastDay</code></td><td><code>boolean</code></td><td>DEFAULT <code>false</code></td></tr>
-            <tr><td><code>markedBy</code></td><td><code>uuid</code></td><td>FK → directus_users(id), NULLABLE</td></tr>
+            <tr><td><code>markedBy</code></td><td><code>uuid</code></td><td>FK → users(id), NULLABLE</td></tr>
           </table>
           <p><strong>Unique constraint:</strong> <code>UNIQUE(studentId, date)</code></p>
           <p><strong>Indexes:</strong> <code>idx_attendance_date ON attendance(date)</code>, <code>idx_attendance_classDate ON attendance(classStreamId, date)</code></p>
@@ -1084,7 +1076,7 @@ system_logs ──── directus_users (userId)</code></pre>
             <tr><td><code>action</code></td><td><code>varchar(100)</code></td><td>NOT NULL</td></tr>
             <tr><td><code>description</code></td><td><code>text</code></td><td>NOT NULL</td></tr>
             <tr><td><code>level</code></td><td><code>varchar(10)</code></td><td>NOT NULL</td></tr>
-            <tr><td><code>userId</code></td><td><code>uuid</code></td><td>FK → directus_users(id), NULLABLE</td></tr>
+            <tr><td><code>userId</code></td><td><code>uuid</code></td><td>FK → users(id), NULLABLE</td></tr>
           </table>
           <p><strong>Index:</strong> <code>idx_system_logs_action ON system_logs(action)</code></p>
 
@@ -1095,14 +1087,14 @@ students      1──N assessments
 subjects      1──N assessments
 students      1──N attendance
 class_streams 1──N attendance
-directus_users 1──N attendance (markedBy)
-directus_users 1──N system_logs (userId)</code></pre>
+users 1──N attendance (markedBy)
+users 1──N system_logs (userId)</code></pre>
 
           <p><strong>Directus configuration notes:</strong></p>
           <ul>
             <li>Enable <code>date_created</code> and <code>date_updated</code> on all collections (Directus defaults)</li>
             <li>Configure unique constraints in Directus for: <code>users.email</code>, <code>students.admissionNumber</code>, <code>subjects.code</code>, <code>class_streams.code</code>, <code>assessments[studentId+subjectId+term+academicYear+type]</code>, <code>attendance[studentId+date]</code></li>
-            <li>Enable <code>assignedClasses</code> as a JSON field on <code>directus_users</code> — this stores teacher class assignments as an array of class stream IDs</li>
+            <li>Enable <code>assignedClasses</code> as a JSON field on <code>users</code> — this stores teacher class assignments as an array of class stream IDs</li>
           </ul>
         </div>
       </div>
