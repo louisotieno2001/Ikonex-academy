@@ -1,8 +1,9 @@
-// Sidebar toggle
 document.addEventListener('DOMContentLoaded', function() {
   var toggle = document.getElementById('sidebar-toggle');
   var sidebar = document.getElementById('sidebar');
   var overlay = document.getElementById('sidebar-overlay');
+
+  // Sidebar toggle (mobile)
   if (toggle && sidebar) {
     toggle.addEventListener('click', function() {
       sidebar.classList.toggle('open');
@@ -16,81 +17,79 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Sidebar section collapse (toggle + navigate)
+  // Pane switching
+  window.switchPane = function(paneId) {
+    // Hide all panes
+    document.querySelectorAll('.pane').forEach(function(p) { p.classList.remove('active'); });
+    // Deactivate all sidebar items
+    document.querySelectorAll('.sidebar .nav-item').forEach(function(n) { n.classList.remove('active'); });
+    // Show target pane
+    var target = document.getElementById('pane-' + paneId);
+    if (target) target.classList.add('active');
+    // Activate sidebar item
+    var navItem = document.querySelector('.sidebar .nav-item[data-pane="' + paneId + '"]');
+    if (navItem) navItem.classList.add('active');
+    // Close mobile sidebar
+    if (window.innerWidth <= 768) {
+      if (sidebar) sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('show');
+    }
+    history.replaceState(null, '', window.location.pathname + '?pane=' + paneId);
+  };
+
+  // Sidebar nav clicks
+  document.querySelectorAll('.sidebar .nav-item[data-pane]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      var pane = this.getAttribute('data-pane');
+      if (pane) switchPane(pane);
+    });
+  });
+
+  // Section header collapse
   document.querySelectorAll('.sidebar .sec > .nav-item').forEach(function(link) {
     link.addEventListener('click', function(e) {
+      e.preventDefault();
       var sec = this.closest('.sec');
       sec.classList.toggle('open');
     });
   });
 
-  // Close sidebar on mobile when any nav link is clicked
+  // Close mobile sidebar on any nav click
   document.querySelectorAll('.sidebar .nav-item').forEach(function(item) {
     item.addEventListener('click', function() {
       if (window.innerWidth <= 768) {
-        sidebar.classList.remove('open');
+        if (sidebar) sidebar.classList.remove('open');
         if (overlay) overlay.classList.remove('show');
       }
     });
   });
 
-  // Tab switching
-  window.switchTab = function(tabId) {
-    // Hide all tab content
-    document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
-    // Deactivate all tab buttons
-    document.querySelectorAll('.tab-btn').forEach(function(tb) { tb.classList.remove('active'); });
-    // Show target
-    var target = document.getElementById('tab-' + tabId);
-    if (target) target.classList.add('active');
-    // Activate button
-    var btn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
-    if (btn) btn.classList.add('active');
-    // Update URL hash
-    history.replaceState(null, '', '#tab-' + tabId);
-  };
-
-  // Open tab from hash or query param on load
+  // Open pane from query param on load
   var params = new URLSearchParams(window.location.search);
-  var queryTab = params.get('tab');
-  var hashTab = window.location.hash && window.location.hash.startsWith('#tab-')
-    ? window.location.hash.replace('#tab-', '')
-    : null;
-  var initialTab = queryTab || hashTab;
-  if (initialTab) {
-    switchTab(initialTab);
-    // Activate sidebar sub-item
-    var activeSub = document.querySelector('.sidebar .sub .nav-item[data-tab="' + initialTab + '"]');
-    if (activeSub) activeSub.classList.add('active');
+  var initialPane = params.get('pane');
+  if (initialPane && document.getElementById('pane-' + initialPane)) {
+    switchPane(initialPane);
+    // Open parent section
+    var activeItem = document.querySelector('.sidebar .nav-item[data-pane="' + initialPane + '"]');
+    if (activeItem) {
+      var sec = activeItem.closest('.sec');
+      if (sec) sec.classList.add('open');
+    }
   } else {
-    var firstTab = document.querySelector('.tab-btn');
-    if (firstTab) switchTab(firstTab.getAttribute('data-tab'));
+    // Show landing pane by default
+    var landing = document.getElementById('pane-landing');
+    if (landing) {
+      landing.classList.add('active');
+      var landingNav = document.querySelector('.sidebar .nav-item[data-pane="landing"]');
+      if (landingNav) landingNav.classList.add('active');
+    }
   }
-
-  // Sub-tab switching within a tab
-  document.querySelectorAll('.sub-tab-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var parent = this.closest('.tab-content');
-      var target = this.getAttribute('data-subtab');
-      parent.querySelectorAll('.sub-tab-btn').forEach(function(b) { b.classList.remove('active'); });
-      this.classList.add('active');
-      parent.querySelectorAll('.sub-tab-pane').forEach(function(p) { p.classList.remove('active'); });
-      var pane = document.getElementById(target);
-      if (pane) pane.classList.add('active');
-    });
-  });
-
-  // Auto-activate first sub-tab
-  document.querySelectorAll('.tab-content').forEach(function(tc) {
-    var firstSub = tc.querySelector('.sub-tab-btn');
-    if (firstSub) firstSub.click();
-  });
 
   // Copy code blocks
   document.querySelectorAll('pre').forEach(function(block) {
     var btn = document.createElement('button');
     btn.textContent = 'Copy';
-    btn.className = 'copy-btn';
     btn.style.cssText = 'position:absolute;top:6px;right:6px;background:#343a40;color:#adb5bd;border:1px solid #495057;border-radius:4px;padding:2px 8px;font-size:.7rem;cursor:pointer;font-family:Inter,sans-serif;opacity:0;transition:opacity .15s';
     block.style.position = 'relative';
     block.appendChild(btn);

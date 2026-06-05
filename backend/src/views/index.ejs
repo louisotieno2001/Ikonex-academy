@@ -1,23 +1,15 @@
 <%- include('partials/head', { title: 'Dashboard' }) %>
-<%- include('partials/sidebar', { currentPage: 'index' }) %>
-
-<div class="topbar">
-  <button id="sidebar-toggle" class="mobile-toggle" aria-label="Toggle sidebar">
-    <i data-lucide="menu"></i>
-  </button>
-  <div class="breadcrumb">
-    <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i>
-    <span>Dashboard</span>
+<body>
+<div class="hero-bar" style="padding:3rem 2rem;text-align:center">
+  <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-bottom:0.75rem">
+    <div style="width:44px;height:44px;background:linear-gradient(135deg,#0d7377,#34d399);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:#fff">IA</div>
+    <h1 style="font-size:2rem">Ikonex Academy API</h1>
   </div>
+  <p style="opacity:.75;font-size:1rem;max-width:540px;margin:0 auto">School management backend — assessments, attendance, report cards, and grading.</p>
 </div>
 
-<div class="hero-bar">
-  <h1>Ikonex Academy API</h1>
-  <p>School management backend — Express server powering assessments, attendance, report cards, and grading.</p>
-</div>
-
-<div class="content wide">
-  <div class="status-grid" style="margin-top:-2rem">
+<div class="content" style="max-width:1100px">
+  <div class="status-grid" style="margin-bottom:2rem">
     <div class="status-card">
       <div class="label">Directus</div>
       <div class="value">
@@ -37,10 +29,6 @@
       <div class="label">Students</div>
       <div class="value"><%= counts ? counts.students : '\u2014' %></div>
     </div>
-    <div class="status-card">
-      <div class="label">API Status</div>
-      <div class="value" style="color:#34d399">Operational</div>
-    </div>
   </div>
 
   <div class="grid-3">
@@ -49,7 +37,7 @@
         <i data-lucide="book-open"></i>
       </div>
       <h3>Documentation</h3>
-      <p>Full breakdown of every folder, file, and tech decision across backend, frontend, database, and Directus.</p>
+      <p>Full breakdown of every folder, file, and tech decision across frontend, backend, Directus, and PostgreSQL.</p>
       <a href="/docs" class="ext-link" style="margin-top:0.75rem">
         <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
         View Documentation
@@ -60,7 +48,7 @@
         <i data-lucide="heart-pulse"></i>
       </div>
       <h3>Health Check</h3>
-      <p>Basic liveness probe for container orchestration and monitoring. Returns JSON status.</p>
+      <p>Liveness probe for container orchestration and monitoring. Returns JSON status on the /health endpoint.</p>
       <a href="/health" class="ext-link" style="margin-top:0.75rem">
         <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
         Check Health
@@ -72,9 +60,9 @@
       </div>
       <h3>Tech Stack</h3>
       <p>Node.js, Express, React 18, TypeScript, PostgreSQL 16, Directus, Tailwind CSS, Vite, PDFKit, Recharts.</p>
-      <a href="/docs?tab=architecture" class="ext-link" style="margin-top:0.75rem">
+      <a href="/docs" class="ext-link" style="margin-top:0.75rem">
         <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
-        See Architecture
+        View Docs
       </a>
     </div>
   </div>
@@ -83,11 +71,7 @@
     <h2>API Endpoints</h2>
     <table>
       <thead>
-        <tr>
-          <th>Method</th>
-          <th>Path</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Method</th><th>Path</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr><td><span class="tag tag-be">GET</span></td><td><code>/health</code></td><td>Server health check</td></tr>
@@ -111,5 +95,4 @@
   <a href="/docs">Documentation</a> &middot;
   <a href="/health">Health</a>
 </div>
-
 <%- include('partials/foot') %>

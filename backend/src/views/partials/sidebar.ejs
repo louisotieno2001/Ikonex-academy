@@ -1,55 +1,100 @@
-<div class="wrapper">
-  <div id="sidebar-overlay" class="sidebar-overlay"></div>
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-box">IA</div>
-      <div>
-        <h1>Ikonex Academy</h1>
-        <span>Management System</span>
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+<aside id="sidebar" class="sidebar">
+  <a href="/" class="sidebar-logo" style="text-decoration:none">
+    <div class="logo-box">IA</div>
+    <div>
+      <h1>Ikonex Academy</h1>
+      <span>Management System</span>
+    </div>
+  </a>
+  <nav>
+      <a href="/docs" class="nav-item" data-pane="landing">
+        <i data-lucide="book-open"></i>
+        Overview
+      </a>
+
+    <!-- Frontend -->
+    <div class="sec">
+      <div class="nav-item">
+        <span style="display:flex;align-items:center;gap:0.65rem">
+          <i data-lucide="monitor"></i>
+          Frontend
+        </span>
+        <i data-lucide="chevron-right" class="chev"></i>
+      </div>
+      <div class="sub">
+        <a href="/docs" class="nav-item" data-pane="frontend-intro"><i data-lucide="info" style="width:16px;height:16px"></i> Introduction</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-app"><i data-lucide="file-code" style="width:16px;height:16px"></i> App.tsx</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-components"><i data-lucide="layout" style="width:16px;height:16px"></i> components/</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-contexts"><i data-lucide="box" style="width:16px;height:16px"></i> contexts/</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-api"><i data-lucide="link" style="width:16px;height:16px"></i> api/</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-modules"><i data-lucide="package" style="width:16px;height:16px"></i> modules/</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-pages"><i data-lucide="file" style="width:16px;height:16px"></i> pages/</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-public"><i data-lucide="image" style="width:16px;height:16px"></i> public/</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-dockerfile"><i data-lucide="layers" style="width:16px;height:16px"></i> Dockerfile</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-package"><i data-lucide="archive" style="width:16px;height:16px"></i> package.json</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-vite"><i data-lucide="zap" style="width:16px;height:16px"></i> vite.config.ts</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-tsconfig"><i data-lucide="settings" style="width:16px;height:16px"></i> tsconfig.json</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-tailwind"><i data-lucide="palette" style="width:16px;height:16px"></i> tailwind.config.js</a>
+        <a href="/docs" class="nav-item" data-pane="frontend-nginx"><i data-lucide="globe" style="width:16px;height:16px"></i> nginx.conf</a>
       </div>
     </div>
-    <nav>
-      <a href="/" class="nav-item <%= currentPage === 'index' ? 'active' : '' %>" data-tab="">
-        <i data-lucide="layout-dashboard"></i>
-        Dashboard
-      </a>
 
-      <div class="sec <%= currentPage === 'docs' ? 'open' : '' %>">
-        <a href="/docs" class="nav-item <%= currentPage === 'docs' ? 'active' : '' %>">
-          <span style="display:flex;align-items:center;gap:0.65rem">
-            <i data-lucide="book-open"></i>
-            Documentation
-          </span>
-          <i data-lucide="chevron-right" class="chev"></i>
-        </a>
-        <div class="sub">
-          <a href="/docs?tab=backend" class="nav-item" data-tab="backend">
-            <i data-lucide="server" style="width:16px;height:16px"></i>
-            Backend
-          </a>
-          <a href="/docs?tab=frontend" class="nav-item" data-tab="frontend">
-            <i data-lucide="monitor" style="width:16px;height:16px"></i>
-            Frontend
-          </a>
-          <a href="/docs?tab=directus" class="nav-item" data-tab="directus">
-            <i data-lucide="database" style="width:16px;height:16px"></i>
-            Directus
-          </a>
-          <a href="/docs?tab=postgresql" class="nav-item" data-tab="postgresql">
-            <i data-lucide="hard-drive" style="width:16px;height:16px"></i>
-            PostgreSQL
-          </a>
-          <a href="/docs?tab=architecture" class="nav-item" data-tab="architecture">
-            <i data-lucide="git-branch" style="width:16px;height:16px"></i>
-            Architecture
-          </a>
-        </div>
+    <!-- Backend -->
+    <div class="sec">
+      <div class="nav-item">
+        <span style="display:flex;align-items:center;gap:0.65rem">
+          <i data-lucide="server"></i>
+          Backend
+        </span>
+        <i data-lucide="chevron-right" class="chev"></i>
       </div>
+      <div class="sub">
+        <a href="/docs" class="nav-item" data-pane="backend-intro"><i data-lucide="info" style="width:16px;height:16px"></i> Introduction</a>
+        <a href="/docs" class="nav-item" data-pane="backend-app"><i data-lucide="file-code" style="width:16px;height:16px"></i> app.js</a>
+        <a href="/docs" class="nav-item" data-pane="backend-config"><i data-lucide="settings" style="width:16px;height:16px"></i> config/</a>
+        <a href="/docs" class="nav-item" data-pane="backend-controllers"><i data-lucide="cpu" style="width:16px;height:16px"></i> controllers/</a>
+        <a href="/docs" class="nav-item" data-pane="backend-routes"><i data-lucide="route" style="width:16px;height:16px"></i> routes/</a>
+        <a href="/docs" class="nav-item" data-pane="backend-middleware"><i data-lucide="shield" style="width:16px;height:16px"></i> middleware/</a>
+        <a href="/docs" class="nav-item" data-pane="backend-services"><i data-lucide="wrench" style="width:16px;height:16px"></i> services/</a>
+        <a href="/docs" class="nav-item" data-pane="backend-views"><i data-lucide="file-text" style="width:16px;height:16px"></i> views/</a>
+        <a href="/docs" class="nav-item" data-pane="backend-public"><i data-lucide="folder" style="width:16px;height:16px"></i> public/</a>
+        <a href="/docs" class="nav-item" data-pane="backend-dockerfile"><i data-lucide="layers" style="width:16px;height:16px"></i> Dockerfile</a>
+        <a href="/docs" class="nav-item" data-pane="backend-package"><i data-lucide="archive" style="width:16px;height:16px"></i> package.json</a>
+      </div>
+    </div>
 
-      <a href="/health" class="nav-item">
-        <i data-lucide="activity"></i>
-        Health Check
-      </a>
-    </nav>
-  </aside>
-  <div class="main">
+    <!-- Directus -->
+    <div class="sec">
+      <div class="nav-item">
+        <span style="display:flex;align-items:center;gap:0.65rem">
+          <i data-lucide="database"></i>
+          Directus
+        </span>
+        <i data-lucide="chevron-right" class="chev"></i>
+      </div>
+      <div class="sub">
+        <a href="/docs" class="nav-item" data-pane="directus-intro"><i data-lucide="info" style="width:16px;height:16px"></i> Introduction</a>
+        <a href="/docs" class="nav-item" data-pane="directus-collections"><i data-lucide="columns" style="width:16px;height:16px"></i> Collections</a>
+        <a href="/docs" class="nav-item" data-pane="directus-permissions"><i data-lucide="lock" style="width:16px;height:16px"></i> Permissions</a>
+        <a href="/docs" class="nav-item" data-pane="directus-dockerfile"><i data-lucide="layers" style="width:16px;height:16px"></i> Dockerfile</a>
+      </div>
+    </div>
+
+    <!-- PostgreSQL -->
+    <div class="sec">
+      <div class="nav-item">
+        <span style="display:flex;align-items:center;gap:0.65rem">
+          <i data-lucide="hard-drive"></i>
+          PostgreSQL
+        </span>
+        <i data-lucide="chevron-right" class="chev"></i>
+      </div>
+      <div class="sub">
+        <a href="/docs" class="nav-item" data-pane="postgresql-intro"><i data-lucide="info" style="width:16px;height:16px"></i> Introduction</a>
+        <a href="/docs" class="nav-item" data-pane="postgresql-schema"><i data-lucide="columns" style="width:16px;height:16px"></i> Schema</a>
+        <a href="/docs" class="nav-item" data-pane="postgresql-dockerfile"><i data-lucide="layers" style="width:16px;height:16px"></i> Dockerfile</a>
+      </div>
+    </div>
+  </nav>
+</aside>

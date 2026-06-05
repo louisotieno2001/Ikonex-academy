@@ -6,7 +6,7 @@ const getIndex = async (req, res) => {
     const start = Date.now();
     await query('GET', '/server/info');
     uptime = Math.floor((Date.now() - start) / 1000);
-    const usersRes = await query('GET', '/items/directus_users', null, { limit: 1 });
+    const usersRes = await query('GET', '/items/users', null, { limit: 1 });
     const studentsRes = await query('GET', '/items/students', null, { limit: 1, aggregate: { count: 'id' } });
     directus = 'connected';
     counts = {
