@@ -18,7 +18,7 @@ const config = {
   },
 
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:9001' || 'http://127.0.1:9001',
+    origin: process.env.CORS_ORIGIN || 'http://localhost:9001' || 'http://127.0.1:9001' || 'https://ikonex.hustlerati.com' || 'https://www.ikonex.hustlerati.com' || 'https://api.ikonex.hustlerati.com' || 'https://www.api.ikonex.hustlerati.com',
   },
 
   bcrypt: {
