@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8f9fa;
+  --foreground: #212529;
+  --card: #ffffff;
+  --card-foreground: #212529;
+  --muted: #f1f3f5;
+  --muted-foreground: #868e96;
+  --primary: #0d7377;
+  --primary-foreground: #ffffff;
+  --border: #e9ecef;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #212529;
+  --sidebar-accent: #0d7377;
+  --sidebar-accent-foreground: #0b5e63;
+  --sidebar-border: #e9ecef;
+  --destructive: #dc2626;
+  --ring: #0d7377;
+}
+
+.dark {
+  --background: #141517;
+  --foreground: #dee2e6;
+  --card: #343a40;
+  --card-foreground: #dee2e6;
+  --muted: #343a40;
+  --muted-foreground: #adb5bd;
+  --primary: #0d7377;
+  --primary-foreground: #ffffff;
+  --border: #495057;
+  --sidebar: #212529;
+  --sidebar-foreground: #dee2e6;
+  --sidebar-accent: #6ee7b7;
+  --sidebar-accent-foreground: #34d399;
+  --sidebar-border: #495057;
+  --destructive: #ef4444;
+  --ring: #0d7377;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-150 border rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn text-primary-foreground bg-primary border-primary hover:bg-brand-600 focus:ring-brand-400 shadow-sm hover:shadow;
+  }
+  .btn-secondary {
+    @apply btn bg-muted text-muted-foreground border-border hover:bg-ink-100 hover:text-foreground focus:ring-brand-400;
+  }
+  .btn-ghost {
+    @apply btn text-muted-foreground border-transparent hover:bg-muted hover:text-foreground focus:ring-brand-400;
+  }
+  .btn-danger {
+    @apply btn text-white bg-destructive border-destructive hover:bg-red-700 focus:ring-red-400;
+  }
+  .input {
+    @apply block w-full px-3 py-2 text-sm border rounded-lg shadow-soft border-border bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow;
+  }
+  .label {
+    @apply block text-sm font-medium text-foreground mb-1.5;
+  }
+  .card {
+    @apply bg-card text-card-foreground border border-border rounded-xl shadow-card transition-shadow hover:shadow-elevated;
+  }
+  .card-static {
+    @apply bg-card text-card-foreground border border-border rounded-xl shadow-card;
+  }
+  .page-title {
+    @apply text-2xl font-bold text-foreground tracking-tight;
+  }
+  .section-title {
+    @apply text-lg font-semibold text-foreground;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-success {
+    @apply badge bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700;
+  }
+  .badge-warning {
+    @apply badge bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700;
+  }
+  .badge-info {
+    @apply badge bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700;
+  }
+  .badge-ink {
+    @apply badge bg-muted text-muted-foreground border border-border;
+  }
+  .skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+}
