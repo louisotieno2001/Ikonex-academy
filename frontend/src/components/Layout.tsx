@@ -52,7 +52,7 @@ export default function Layout() {
     <div className="min-h-screen flex bg-background">
       <aside
         className={clsx(
-          "fixed inset-y-0 left-0 z-30 w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col transition-transform duration-200 lg:translate-x-0 lg:static lg:inset-auto",
+          "fixed inset-y-0 left-0 z-30 w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col transition-transform duration-200 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
