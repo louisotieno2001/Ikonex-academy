@@ -23,10 +23,25 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
-app.use(cors({
-  origin: config.cors.origin,
+// CORS configuration
+console.log('CORS Origins allowed:', config.cors.origin);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches any in our allowed list
+    if (config.cors.origin.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('CORS rejected origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-}));
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());

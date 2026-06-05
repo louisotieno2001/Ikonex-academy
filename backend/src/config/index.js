@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const config = {
-  port: parseInt(process.env.API_PORT || process.env.BACKEND_PORT || process.env.PORT, 10) || 9002,
+  port: parseInt(process.env.API_PORT || process.env.BACKEND_PORT, 10) || 9002,
   nodeEnv: process.env.NODE_ENV || 'development',
   baseUrl: process.env.API_URL || `http://localhost:${parseInt(process.env.API_PORT, 10) || 9002}`,
 
