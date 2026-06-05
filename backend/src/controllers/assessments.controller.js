@@ -14,6 +14,7 @@ const list = async (req, res) => {
     if (req.query.subjectId) filter.subjectId = { _eq: req.query.subjectId };
     if (req.query.term) filter.term = { _eq: req.query.term };
     if (req.query.academicYear) filter.academicYear = { _eq: req.query.academicYear };
+    if (req.query.type) filter.type = { _eq: req.query.type };
 
     const result = await getItems('assessments', {
       fields: '*,studentId.*,subjectId.*,studentId.classStreamId.*',
@@ -33,7 +34,7 @@ const list = async (req, res) => {
 
     if (req.query.classStreamId) {
       assessments = assessments.filter(
-        (a) => a.studentId?.classStreamId === req.query.classStreamId
+        (a) => (a.studentId?.classStreamId?.id || a.studentId?.classStreamId) === req.query.classStreamId
       );
     }
 

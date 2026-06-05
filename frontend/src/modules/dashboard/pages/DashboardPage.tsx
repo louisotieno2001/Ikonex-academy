@@ -38,7 +38,7 @@ export default function Dashboard() {
 
   const classData = isAdmin ? classes?.map((c) => ({
     name: c.name,
-    Students: c.studentCount || students?.filter((s) => s.classStreamId === c.id).length || 0,
+    Students: c.studentCount ?? students?.filter((s) => s.classStreamId === c.id).length ?? 0,
   })) || [] : [];
 
   const COLORS = ['var(--primary)', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'];

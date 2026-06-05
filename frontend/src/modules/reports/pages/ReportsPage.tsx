@@ -17,8 +17,11 @@ export default function Reports() {
   const [activeTab, setActiveTab] = useState<"class" | "student" | "scales">("class");
   const [classId, setClassId] = useState(isTeacher ? (user?.assignedClasses?.[0] || "") : "");
   const [studentId, setStudentId] = useState("");
+  const now = new Date();
+  const defaultAcademicYear = now.getMonth() >= 8 ? `${now.getFullYear()}/${now.getFullYear() + 1}` : `${now.getFullYear() - 1}/${now.getFullYear()}`;
+
   const [term, setTerm] = useState("term1");
-  const [academicYear, setAcademicYear] = useState(new Date().getFullYear().toString());
+  const [academicYear, setAcademicYear] = useState(defaultAcademicYear);
 
   const [showScaleForm, setShowScaleForm] = useState(false);
   const [editingScale, setEditingScale] = useState<GradingScale | null>(null);
@@ -295,8 +298,8 @@ export default function Reports() {
                       <thead>
                         <tr className="bg-muted/50 text-left text-[10px] font-black uppercase text-muted-foreground tracking-widest">
                           <th className="px-8 py-4">Subject Curriculum</th>
-                          <th className="px-6 py-4 text-center">Exam (70%)</th>
-                          <th className="px-6 py-4 text-center">CA (30%)</th>
+                          <th className="px-6 py-4 text-center">Exam (50%)</th>
+                          <th className="px-6 py-4 text-center">CA (50%)</th>
                           <th className="px-6 py-4 text-center">Total Score</th>
                           <th className="px-8 py-4 text-center">Final Grade</th>
                         </tr>

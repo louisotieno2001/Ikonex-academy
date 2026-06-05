@@ -13,6 +13,8 @@ export default function Assessments() {
   const [editing, setEditing] = useState<Assessment | null>(null);
   const [filterClass, setFilterClass] = useState("");
   const [filterSubject, setFilterSubject] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
@@ -37,14 +39,25 @@ export default function Assessments() {
   });
 
   const { data: assessments, isLoading } = useQuery({
-    queryKey: ["assessments", { classStreamId: filterClass, subjectId: filterSubject, term: filterTerm, academicYear: filterYear }],
+    queryKey: ["assessments", { classStreamId: filterClass, subjectId: filterSubject, type: filterType, term: filterTerm, academicYear: filterYear }],
     queryFn: () => assessmentsApi.getAll({
       ...(filterSubject && { subjectId: filterSubject }),
+      ...(filterType && { type: filterType }),
       ...(filterTerm && { term: filterTerm }),
       ...(filterYear && { academicYear: filterYear }),
       ...(filterClass && { classStreamId: filterClass }),
     }).then((r) => r.data),
   });
+
+  const filteredAssessments = useMemo(() => {
+    if (!assessments) return [];
+    if (!searchQuery) return assessments;
+    const q = searchQuery.toLowerCase();
+    return assessments.filter((a) => {
+      const name = a.student ? `${a.student.firstName} ${a.student.lastName}`.toLowerCase() : "";
+      return name.includes(q);
+    });
+  }, [assessments, searchQuery]);
 
   const filteredStudents = useMemo(() => {
     if (!students) return [];
@@ -119,12 +132,23 @@ export default function Assessments() {
           <option value="">All subjects</option>
           {subjects?.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
+        <select className="input w-auto text-sm" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+          <option value="">All types</option>
+          <option value="exam">Exam</option>
+          <option value="continuous_assessment">Continuous Assessment</option>
+        </select>
         <select className="input w-auto text-sm" value={filterTerm} onChange={(e) => setFilterTerm(e.target.value)}>
           <option value="term1">Term 1</option>
           <option value="term2">Term 2</option>
           <option value="term3">Term 3</option>
         </select>
         <input className="input w-28 text-sm" value={filterYear} onChange={(e) => setFilterYear(e.target.value)} placeholder="Year" />
+        <input
+          className="input w-40 text-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search student..."
+        />
       </div>
 
       {showForm && (
@@ -205,7 +229,7 @@ export default function Assessments() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {assessments?.map((a) => (
+                {filteredAssessments?.map((a) => (
                   <tr key={a.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-4 py-3 font-medium">{a.student ? `${a.student.firstName} ${a.student.lastName}` : "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{a.subject?.name}</td>
@@ -238,7 +262,7 @@ export default function Assessments() {
               </tbody>
             </table>
           </div>
-          {assessments?.length === 0 && (
+          {filteredAssessments?.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <ClipboardCheck className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
               <p className="font-medium">No assessments recorded</p>

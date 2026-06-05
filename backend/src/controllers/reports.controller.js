@@ -2,6 +2,10 @@ const { getItems, getItem, createItem, updateItem, deleteItem } = require('../se
 const { determineGrade, calculatePosition, getGradingScales, invalidateScaleCache } = require('../services/grades');
 const { generateReportCard, generateClassReport } = require('../services/pdf');
 
+const getSubjectId = (a) => a.subjectId?.id || a.subjectId;
+const getStudentId = (a) => a.studentId?.id || a.studentId;
+const getStudentClassId = (a) => a.studentId?.classStreamId?.id || a.studentId?.classStreamId;
+
 const getGradingScalesHandler = async (req, res) => {
   try {
     const scales = await getGradingScales();
@@ -88,27 +92,30 @@ const getStudentReport = async (req, res) => {
 
     const subjectMap = new Map();
     assessments.forEach((a) => {
-      if (!subjectMap.has(a.subjectId)) {
-        subjectMap.set(a.subjectId, {
+      const sk = getSubjectId(a);
+      if (!sk) return;
+      if (!subjectMap.has(sk)) {
+        subjectMap.set(sk, {
           name: a.subjectId?.name || 'Unknown',
           exam: 0,
           ca: 0,
         });
       }
-      const entry = subjectMap.get(a.subjectId);
+      const entry = subjectMap.get(sk);
       if (a.type === 'exam') entry.exam = a.score;
       else entry.ca = a.score;
     });
 
     const subjects = Array.from(subjectMap.entries()).map(([sid, data]) => {
-      const total = data.exam + data.ca;
-      const grade = determineGrade(total, 100, scales);
+      const exam = Number(data.exam), ca = Number(data.ca);
+      const percentage = exam + ca === 0 ? 0 : (exam + ca) / 2;
+      const grade = determineGrade(percentage, 100, scales);
       return {
         subjectId: sid,
         subjectName: data.name,
-        examScore: data.exam,
-        caScore: data.ca,
-        total,
+        examScore: exam,
+        caScore: ca,
+        total: percentage,
         grade: grade.grade,
         gradePoint: grade.gradePoint,
       };
@@ -128,24 +135,23 @@ const getStudentReport = async (req, res) => {
     const studentClassId = student.classStreamId?.id || student.classStreamId;
     const classStudentIds = [...new Set(
       allAssessments
-        .filter((a) => {
-          const sid = a.studentId?.classStreamId?.id || a.studentId?.classStreamId;
-          return sid === studentClassId;
-        })
-        .map((a) => a.studentId?.id || a.studentId)
+        .filter((a) => getStudentClassId(a) === studentClassId)
+        .map((a) => getStudentId(a))
     )];
 
     const totalsMap = new Map();
     classStudentIds.forEach((sid) => {
-      const sAssessments = allAssessments.filter((a) => (a.studentId?.id || a.studentId) === sid);
+      const sAssessments = allAssessments.filter((a) => getStudentId(a) === sid);
       const subMap = new Map();
       sAssessments.forEach((a) => {
-        if (!subMap.has(a.subjectId)) subMap.set(a.subjectId, { exam: 0, ca: 0 });
-        const entry = subMap.get(a.subjectId);
+        const sk = getSubjectId(a);
+        if (!sk) return;
+        if (!subMap.has(sk)) subMap.set(sk, { exam: 0, ca: 0 });
+        const entry = subMap.get(sk);
         if (a.type === 'exam') entry.exam = a.score;
         else entry.ca = a.score;
       });
-      const total = Array.from(subMap.values()).reduce((sum, s) => sum + s.exam + s.ca, 0);
+      const total = Array.from(subMap.values()).reduce((sum, s) => sum + (Number(s.exam) + Number(s.ca)) / 2, 0);
       totalsMap.set(sid, total);
     });
 
@@ -211,17 +217,20 @@ const getClassReport = async (req, res) => {
     const allAssessments = allAssessmentsResult.data || [];
 
     const studentResults = students.map((student) => {
-      const sAssessments = allAssessments.filter((a) => (a.studentId?.id || a.studentId) === student.id);
+      const sAssessments = allAssessments.filter((a) => getStudentId(a) === student.id);
       const subMap = new Map();
       sAssessments.forEach((a) => {
-        if (!subMap.has(a.subjectId)) subMap.set(a.subjectId, { name: a.subjectId?.name || 'Unknown', exam: 0, ca: 0 });
-        const entry = subMap.get(a.subjectId);
+        const sk = getSubjectId(a);
+        if (!sk) return;
+        if (!subMap.has(sk)) subMap.set(sk, { name: a.subjectId?.name || 'Unknown', exam: 0, ca: 0 });
+        const entry = subMap.get(sk);
         if (a.type === 'exam') entry.exam = a.score;
         else entry.ca = a.score;
       });
 
       const subjects = Array.from(subMap.entries()).map(([, data]) => {
-        const total = data.exam + data.ca;
+        const exam = Number(data.exam), ca = Number(data.ca);
+        const total = exam + ca === 0 ? 0 : (exam + ca) / 2;
         const grade = determineGrade(total, 100, scales);
         return { name: data.name, total, grade: grade.grade };
       });
@@ -287,20 +296,24 @@ const getStudentReportPdf = async (req, res) => {
 
     const subjectMap = new Map();
     assessments.forEach((a) => {
-      if (!subjectMap.has(a.subjectId)) subjectMap.set(a.subjectId, { name: a.subjectId?.name || 'Unknown', exam: 0, ca: 0 });
-      const entry = subjectMap.get(a.subjectId);
+      const sk = getSubjectId(a);
+      if (!sk) return;
+      if (!subjectMap.has(sk)) subjectMap.set(sk, { name: a.subjectId?.name || 'Unknown', exam: 0, ca: 0 });
+      const entry = subjectMap.get(sk);
       if (a.type === 'exam') entry.exam = a.score;
       else entry.ca = a.score;
     });
 
-    const subjects = Array.from(subjectMap.entries()).map(([, data]) => {
-      const total = data.exam + data.ca;
-      const grade = determineGrade(total, 100, scales);
+    const subjects = Array.from(subjectMap.entries()).map(([sid, data]) => {
+      const exam = Number(data.exam), ca = Number(data.ca);
+      const percentage = exam + ca === 0 ? 0 : (exam + ca) / 2;
+      const grade = determineGrade(percentage, 100, scales);
       return {
+        subjectId: sid,
         name: data.name,
-        examScore: data.exam,
-        caScore: data.ca,
-        total,
+        examScore: exam,
+        caScore: ca,
+        total: percentage,
         grade: grade.grade,
         gradePoint: grade.gradePoint,
         position: 0,
@@ -321,29 +334,48 @@ const getStudentReportPdf = async (req, res) => {
     const studentClassId = student.classStreamId?.id || student.classStreamId;
     const classStudentIds = [...new Set(
       allAssessments
-        .filter((a) => {
-          const sid = a.studentId?.classStreamId?.id || a.studentId?.classStreamId;
-          return sid === studentClassId;
-        })
-        .map((a) => a.studentId?.id || a.studentId)
+        .filter((a) => getStudentClassId(a) === studentClassId)
+        .map((a) => getStudentId(a))
     )];
 
+    const classAssessments = allAssessments.filter((a) => classStudentIds.includes(getStudentId(a)));
+
     const totalsMap = new Map();
+    const subjectTotals = new Map();
     classStudentIds.forEach((sid) => {
-      const sAssessments = allAssessments.filter((a) => (a.studentId?.id || a.studentId) === sid);
+      const sAssessments = classAssessments.filter((a) => getStudentId(a) === sid);
       const subMap = new Map();
       sAssessments.forEach((a) => {
-        if (!subMap.has(a.subjectId)) subMap.set(a.subjectId, { exam: 0, ca: 0 });
-        const entry = subMap.get(a.subjectId);
+        const sk = getSubjectId(a);
+        if (!sk) return;
+        if (!subMap.has(sk)) subMap.set(sk, { exam: 0, ca: 0 });
+        const entry = subMap.get(sk);
         if (a.type === 'exam') entry.exam = a.score;
         else entry.ca = a.score;
       });
-      totalsMap.set(sid, Array.from(subMap.values()).reduce((sum, s) => sum + s.exam + s.ca, 0));
+      totalsMap.set(sid, Array.from(subMap.values()).reduce((sum, s) => sum + (Number(s.exam) + Number(s.ca)) / 2, 0));
+
+      subMap.forEach((data, sk) => {
+        if (!subjectTotals.has(sk)) subjectTotals.set(sk, new Map());
+        subjectTotals.get(sk).set(sid, (Number(data.exam) + Number(data.ca)) / 2);
+      });
     });
 
     const positions = calculatePosition(
       Array.from(totalsMap.entries()).map(([sid, total]) => ({ studentId: sid, total }))
     );
+
+    const subjectPositions = new Map();
+    subjectTotals.forEach((studentMap, sk) => {
+      const ranked = calculatePosition(
+        Array.from(studentMap.entries()).map(([sid, total]) => ({ studentId: sid, total }))
+      );
+      subjectPositions.set(sk, ranked.get(student.id) || 0);
+    });
+
+    subjects.forEach((s) => {
+      s.position = subjectPositions.get(s.subjectId) || 0;
+    });
 
     generateReportCard({
       studentName: `${student.firstName} ${student.lastName}`,
@@ -400,17 +432,20 @@ const getClassReportPdf = async (req, res) => {
     const allAssessments = allAssessmentsResult.data || [];
 
     const studentResults = students.map((student) => {
-      const sAssessments = allAssessments.filter((a) => (a.studentId?.id || a.studentId) === student.id);
+      const sAssessments = allAssessments.filter((a) => getStudentId(a) === student.id);
       const subMap = new Map();
       sAssessments.forEach((a) => {
-        if (!subMap.has(a.subjectId)) subMap.set(a.subjectId, { name: a.subjectId?.name || 'Unknown', exam: 0, ca: 0 });
-        const entry = subMap.get(a.subjectId);
+        const sk = getSubjectId(a);
+        if (!sk) return;
+        if (!subMap.has(sk)) subMap.set(sk, { name: a.subjectId?.name || 'Unknown', exam: 0, ca: 0 });
+        const entry = subMap.get(sk);
         if (a.type === 'exam') entry.exam = a.score;
         else entry.ca = a.score;
       });
 
       const subjects = Array.from(subMap.entries()).map(([, data]) => {
-        const total = data.exam + data.ca;
+        const exam = Number(data.exam), ca = Number(data.ca);
+        const total = exam + ca === 0 ? 0 : (exam + ca) / 2;
         const grade = determineGrade(total, 100, scales);
         return { name: data.name, total, grade: grade.grade };
       });

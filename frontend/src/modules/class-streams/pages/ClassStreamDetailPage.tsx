@@ -77,7 +77,7 @@ export default function ClassStreamDetail() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">{data.name}</h1>
             <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Users className="w-4 h-4" /> {data.students?.length || 0} Students</span>
+              <span className="flex items-center gap-1.5"><Users className="w-4 h-4" /> {data.studentCount ?? data.students?.length ?? 0} Students</span>
               <span className="flex items-center gap-1.5"><BookOpen className="w-4 h-4" /> {data.classSubjects?.length || 0} Subjects</span>
             </div>
           </div>

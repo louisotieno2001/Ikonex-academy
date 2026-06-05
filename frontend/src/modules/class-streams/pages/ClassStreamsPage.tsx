@@ -131,7 +131,7 @@ export default function ClassStreams() {
                     <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{s.code}</span>
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    {s.students?.length || 0} student{(s.students?.length || 0) !== 1 ? "s" : ""}
+                    {s.studentCount ?? s.students?.length ?? 0} student{(s.studentCount ?? s.students?.length ?? 0) !== 1 ? "s" : ""}
                     {s.description && <span className="mx-1.5">&middot;</span>}
                     {s.description && <span>{s.description}</span>}
                   </div>
