@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
+const { writeLog } = require('./system.controller');
 
 function generateTokens(user) {
   const payload = { id: user.id, email: user.email, role: user.role };
@@ -18,6 +19,8 @@ function generateTokens(user) {
 
 const normalizeUser = (user) => {
   if (!user) return null;
+  const raw = user.assignedClasses || user.assignedClassId || [];
+  const assignedClasses = Array.isArray(raw) ? raw : (raw ? [raw] : []);
   return {
     id: user.id,
     firstName: user.firstName,
@@ -25,7 +28,7 @@ const normalizeUser = (user) => {
     email: user.email,
     role: user.role,
     suspend: !!user.suspend,
-    assignedClassId: user.assignedClassId || null,
+    assignedClasses,
     date_created: user.date_created,
   };
 };
@@ -66,6 +69,11 @@ const login = async (req, res) => {
     });
 
     if (!result.data || result.data.length === 0) {
+      await writeLog({
+        action: 'user.login.failed',
+        description: `Failed login attempt for ${cleanEmail}: user not found`,
+        level: 'warn',
+      }).catch(() => {});
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
@@ -83,10 +91,22 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    await writeLog({
+      action: 'user.login',
+      description: `User logged in: ${cleanEmail} (${user.role})`,
+      level: 'info',
+      userId: user.id,
+    }).catch(() => {});
+
     const tokens = generateTokens(user);
 
     res.json({ ...tokens, user: normalizeUser(user) });
   } catch (error) {
+    await writeLog({
+      action: 'user.login.error',
+      description: `Login error for ${req.body?.email}: ${error.message}`,
+      level: 'error',
+    }).catch(() => {});
     console.error('Login error:', error.message);
     res.status(500).json({ error: 'Authentication failed. Please try again.' });
   }
@@ -128,8 +148,19 @@ const register = async (req, res) => {
       suspend: true,
     });
 
+    await writeLog({
+      action: 'user.signup',
+      description: `New user registered: ${cleanEmail}`,
+      level: 'info',
+    });
+
     res.status(201).json({ message: 'Registration successful. Your account is pending approval. Please contact your administrator.' });
   } catch (error) {
+    await writeLog({
+      action: 'user.signup.error',
+      description: `Registration failed for ${req.body?.email}: ${error.message}`,
+      level: 'error',
+    }).catch(() => {});
     console.error('Registration error:', error.message);
     res.status(500).json({ error: 'Registration failed. Please try again.' });
   }
@@ -238,7 +269,7 @@ const listUsers = async (req, res) => {
 const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
-    const { role, assignedClassId } = req.body;
+    const { role, assignedClasses } = req.body;
 
     const validRoles = ['admin', 'teacher', 'staff', 'pending'];
     if (role && !validRoles.includes(role)) {
@@ -251,18 +282,14 @@ const updateUserRole = async (req, res) => {
 
     const payload = {};
     if (role) payload.role = role;
-    if (role === 'teacher' && assignedClassId) {
-      payload.assignedClassId = assignedClassId;
-    }
-    if (role && role !== 'teacher') {
-      payload.assignedClassId = null;
-    }
-    if (assignedClassId !== undefined && role === 'teacher') {
-      payload.assignedClassId = assignedClassId;
+
+    if (role === 'teacher') {
+      const classes = Array.isArray(assignedClasses) ? assignedClasses : (assignedClasses ? [assignedClasses] : []);
+      payload.assignedClasses = classes.filter(Boolean);
     }
 
-    if (role === 'admin' || role === 'staff') {
-      payload.assignedClassId = null;
+    if (role && role !== 'teacher') {
+      payload.assignedClasses = [];
     }
 
     if (Object.keys(payload).length === 0) {
@@ -276,8 +303,20 @@ const updateUserRole = async (req, res) => {
     const updated = await updateItem('users', id, payload);
     const updatedUser = await getItem('users', id, { fields: '*' });
 
+    await writeLog({
+      action: 'user.role.updated',
+      description: `User ${updatedUser.data?.email} role updated to ${role}`,
+      level: 'info',
+      userId: req.user.id,
+    }).catch(() => {});
+
     res.json(normalizeUser(updatedUser.data));
   } catch (error) {
+    await writeLog({
+      action: 'user.role.error',
+      description: `Failed to update role for user ${id}: ${error.message}`,
+      level: 'error',
+    }).catch(() => {});
     console.error('Update user role error:', error.message);
     res.status(500).json({ error: 'Failed to update user' });
   }

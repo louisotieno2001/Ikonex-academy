@@ -1,18 +1,20 @@
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
-const getTeacherClassId = async (userId) => {
-  const result = await getItem('users', userId, { fields: 'assignedClassId' });
-  return result.data?.assignedClassId || null;
+const getTeacherClassIds = async (userId) => {
+  const result = await getItem('users', userId, { fields: 'assignedClasses' });
+  const val = result.data?.assignedClasses;
+  if (!val) return [];
+  return Array.isArray(val) ? val : [val];
 };
 
 const list = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (!classId) return res.json([]);
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (classIds.length === 0) return res.json([]);
       const classSubjects = await getItems('class_subjects', {
         fields: '*,subjectId.*',
-        'filter[classStreamId][_eq]': classId,
+        'filter[classStreamId][_in]': classIds.join(','),
       });
       const subjects = (classSubjects.data || []).map((cs) => cs.subjectId).filter(Boolean);
       return res.json(subjects);
@@ -36,9 +38,9 @@ const getById = async (req, res) => {
     }
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const hasAccess = (result.data.classSubjects || []).some(
-        (cs) => (cs.classStreamId?.id || cs.classStreamId) === classId
+        (cs) => classIds.includes(cs.classStreamId?.id || cs.classStreamId)
       );
       if (!hasAccess) {
         return res.status(403).json({ error: 'You can only view subjects assigned to your class' });
@@ -105,8 +107,8 @@ const assign = async (req, res) => {
     const { classStreamId, subjectIds } = req.body;
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (classId !== classStreamId) {
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (!classIds.includes(classStreamId)) {
         return res.status(403).json({ error: 'You can only assign subjects to your class' });
       }
     }
@@ -146,8 +148,8 @@ const unassign = async (req, res) => {
     const { classStreamId, subjectId } = req.params;
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (classId !== classStreamId) {
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (!classIds.includes(classStreamId)) {
         return res.status(403).json({ error: 'You can only unassign subjects from your class' });
       }
     }

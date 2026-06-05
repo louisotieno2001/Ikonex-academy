@@ -1,26 +1,75 @@
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
-const getTeacherClassId = async (userId) => {
-  const result = await getItem('users', userId, { fields: 'assignedClassId' });
-  return result.data?.assignedClassId || null;
+const getTeacherClassIds = async (userId) => {
+  const result = await getItem('users', userId, { fields: 'assignedClasses' });
+  const val = result.data?.assignedClasses;
+  if (!val) return [];
+  return Array.isArray(val) ? val : [val];
 };
+
+const normalizeClassStudent = (s) => ({
+  id: s.id,
+  admissionNumber: s.admissionNumber,
+  firstName: s.firstName,
+  lastName: s.lastName,
+  gender: s.gender,
+  dateOfBirth: s.dateOfBirth,
+  address: s.address || '',
+  phoneNumber: s.phoneNumber || '',
+  parentName: s.parentName || '',
+  parentPhone: s.parentPhone || '',
+  parentEmail: s.parentEmail || '',
+  medicalInfo: s.medicalInfo || '',
+  classStreamId: (typeof s.classStreamId === 'object' ? s.classStreamId?.id : s.classStreamId) || null,
+  enrollmentDate: s.enrollmentDate,
+  isActive: s.isActive,
+  status: s.status || 'active',
+});
+
+const normalizeClassStream = (c, studentCount) => ({
+  id: c.id,
+  name: c.name,
+  code: c.code,
+  description: c.description || '',
+  isActive: c.isActive,
+  students: c.students ? c.students.map(normalizeClassStudent) : [],
+  studentCount: typeof studentCount === 'number' ? studentCount : (c.students?.length || 0),
+  classSubjects: c.classSubjects || [],
+  createdAt: c.date_created,
+});
 
 const list = async (req, res) => {
   try {
+    let classes;
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (!classId) return res.json([]);
-      const result = await getItem('class_streams', classId, {
-        fields: '*,students.*',
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (classIds.length === 0) return res.json([]);
+      const result = await getItems('class_streams', {
+        fields: '*',
+        sort: 'name',
+        'filter[id][_in]': classIds.join(','),
       });
-      return res.json(result.data ? [result.data] : []);
+      classes = result.data || [];
+    } else {
+      const result = await getItems('class_streams', {
+        fields: '*',
+        sort: 'name',
+      });
+      classes = result.data || [];
     }
 
-    const result = await getItems('class_streams', {
-      fields: '*,students.*',
-      sort: 'name',
+    const studentsResult = await getItems('students', {
+      fields: 'id,classStreamId',
     });
-    res.json(result.data || []);
+    const allStudents = studentsResult.data || [];
+    const countByClass = {};
+    allStudents.forEach((s) => {
+      const cid = typeof s.classStreamId === 'object' ? s.classStreamId?.id : s.classStreamId;
+      if (cid) countByClass[cid] = (countByClass[cid] || 0) + 1;
+    });
+
+    const normalized = classes.map((c) => normalizeClassStream(c, countByClass[c.id] || 0));
+    res.json(normalized);
   } catch (error) {
     console.error('Class streams fetch error:', error.message);
     res.status(500).json({ error: 'Failed to fetch class streams' });
@@ -32,19 +81,28 @@ const getById = async (req, res) => {
     const { id } = req.params;
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (classId !== id) {
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (!classIds.includes(id)) {
         return res.status(403).json({ error: 'You can only view your assigned class' });
       }
     }
 
     const result = await getItem('class_streams', id, {
-      fields: '*,students.*,classSubjects.*,classSubjects.subjectId.*',
+      fields: '*,classSubjects.*,classSubjects.subjectId.*',
     });
     if (!result.data) {
       return res.status(404).json({ error: 'Class stream not found' });
     }
-    res.json(result.data);
+
+    const studentsResult = await getItems('students', {
+      fields: '*,classStreamId.*',
+      'filter[classStreamId][_eq]': id,
+      sort: 'lastName,firstName',
+    });
+
+    const raw = result.data;
+    raw.students = (studentsResult.data || []).map(normalizeClassStudent);
+    res.json(normalizeClassStream(raw, raw.students.length));
   } catch (error) {
     console.error('Class stream fetch error:', error.message);
     res.status(500).json({ error: 'Failed to fetch class stream details' });
@@ -117,7 +175,12 @@ const assignTeacher = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    await updateItem('users', teacherId, { assignedClassId: id, role: 'teacher', suspend: false });
+    const user = await getItem('users', teacherId, { fields: 'assignedClasses' });
+    const existingClasses = user.data?.assignedClasses || [];
+    const updatedClasses = Array.isArray(existingClasses)
+      ? [...new Set([...existingClasses, id])]
+      : [existingClasses, id].filter(Boolean);
+    await updateItem('users', teacherId, { assignedClasses: updatedClasses, role: 'teacher', suspend: false });
     res.json({ success: true, message: 'Teacher assigned to class' });
   } catch (error) {
     console.error('Assign teacher error:', error.message);

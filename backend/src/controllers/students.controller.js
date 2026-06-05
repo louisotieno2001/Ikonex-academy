@@ -1,14 +1,16 @@
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
-const getTeacherClassId = async (userId) => {
-  const result = await getItem('users', userId, { fields: 'assignedClassId' });
-  return result.data?.assignedClassId || null;
+const getTeacherClassIds = async (userId) => {
+  const result = await getItem('users', userId, { fields: 'assignedClasses' });
+  const val = result.data?.assignedClasses;
+  if (!val) return [];
+  return Array.isArray(val) ? val : [val];
 };
 
 const checkTeacherAccess = async (userId, classStreamId) => {
   if (userId.split('_')[0] === 'admin') return true;
-  const classId = await getTeacherClassId(userId);
-  return classId === classStreamId;
+  const classIds = await getTeacherClassIds(userId);
+  return classIds.includes(classStreamId);
 };
 
 const normalizeStudent = (item) => ({
@@ -25,7 +27,7 @@ const normalizeStudent = (item) => ({
   parentEmail: item.parentEmail || '',
   medicalInfo: item.medicalInfo || '',
   classStreamId: (typeof item.classStreamId === 'object' ? item.classStreamId?.id : item.classStreamId) || null,
-  className: item.classStreamId?.name || item.class_name || '',
+  classStream: typeof item.classStreamId === 'object' ? item.classStreamId : null,
   enrollmentDate: item.enrollmentDate,
   isActive: item.isActive,
   status: item.status || 'active',
@@ -35,14 +37,18 @@ const normalizeStudent = (item) => ({
 const list = async (req, res) => {
   try {
     let filter = {};
-    if (req.query.classStreamId) {
-      filter.classStreamId = { _eq: req.query.classStreamId };
-    }
+    const requestedClassId = req.query.classStreamId;
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (!classId) return res.json([]);
-      filter.classStreamId = { _eq: classId };
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (classIds.length === 0) return res.json([]);
+      const allowed = requestedClassId
+        ? classIds.filter((id) => id === requestedClassId)
+        : classIds;
+      if (allowed.length === 0) return res.json([]);
+      filter.classStreamId = { _in: allowed.join(',') };
+    } else if (requestedClassId) {
+      filter.classStreamId = { _eq: requestedClassId };
     }
 
     const result = await getItems('students', {
@@ -69,9 +75,9 @@ const getById = async (req, res) => {
     }
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const studentClassId = result.data.classStreamId?.id || result.data.classStreamId;
-      if (classId !== studentClassId) {
+      if (!classIds.includes(studentClassId)) {
         return res.status(403).json({ error: 'You can only view students in your assigned class' });
       }
     }
@@ -86,15 +92,15 @@ const getById = async (req, res) => {
 const create = async (req, res) => {
   try {
     const { admissionNumber, classStreamId } = req.body;
-    const targetClassId = classStreamId || (req.user.role !== 'admin' ? await getTeacherClassId(req.user.id) : null);
+    const targetClassId = classStreamId || (req.user.role !== 'admin' ? (await getTeacherClassIds(req.user.id))[0] : null);
 
     if (!targetClassId && req.user.role !== 'admin') {
       return res.status(400).json({ error: 'You are not assigned to any class' });
     }
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (targetClassId !== classId) {
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (!classIds.includes(targetClassId)) {
         return res.status(403).json({ error: 'You can only add students to your assigned class' });
       }
     }
@@ -131,9 +137,9 @@ const update = async (req, res) => {
     if (req.user.role !== 'admin') {
       const existing = await getItem('students', id, { fields: 'classStreamId' });
       if (!existing.data) return res.status(404).json({ error: 'Student not found' });
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const studentClassId = existing.data.classStreamId?.id || existing.data.classStreamId;
-      if (classId !== studentClassId) {
+      if (!classIds.includes(studentClassId)) {
         return res.status(403).json({ error: 'You can only update students in your assigned class' });
       }
     }
@@ -144,7 +150,8 @@ const update = async (req, res) => {
     }
 
     const updated = await updateItem('students', id, payload);
-    res.json(updated.data);
+    const refetched = await getItem('students', id, { fields: '*,classStreamId.*' });
+    res.json(normalizeStudent(refetched.data || updated.data));
   } catch (error) {
     console.error('Student update error:', error.message);
     res.status(500).json({ error: 'Failed to update student' });
@@ -158,9 +165,9 @@ const remove = async (req, res) => {
     if (req.user.role !== 'admin') {
       const existing = await getItem('students', id, { fields: 'classStreamId' });
       if (!existing.data) return res.status(404).json({ error: 'Student not found' });
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const studentClassId = existing.data.classStreamId?.id || existing.data.classStreamId;
-      if (classId !== studentClassId) {
+      if (!classIds.includes(studentClassId)) {
         return res.status(403).json({ error: 'You can only delete students in your assigned class' });
       }
     }

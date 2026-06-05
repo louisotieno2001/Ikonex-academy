@@ -69,12 +69,12 @@ export default function Subjects() {
   const startEdit = (s: Subject) => { setEditing(s); reset(s); setShowForm(true); };
   const cancelForm = () => { setShowForm(false); setEditing(null); reset(); };
 
-  const [assignClassId, setAssignClassId] = useState(isTeacher ? user?.assignedClassId || "" : "");
+  const [assignClassId, setAssignClassId] = useState(isTeacher ? (user?.assignedClasses?.[0] || "") : "");
   const [assignSubjectIds, setAssignSubjectIds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (isTeacher && user?.assignedClassId) {
-      setAssignClassId(user.assignedClassId);
+    if (isTeacher && user?.assignedClasses?.length) {
+      setAssignClassId(user.assignedClasses[0]);
     }
   }, [isTeacher, user]);
 

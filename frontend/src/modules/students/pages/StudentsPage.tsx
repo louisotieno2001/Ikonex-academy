@@ -15,7 +15,7 @@ export default function Students() {
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Student | null>(null);
-  const [filterClass, setFilterClass] = useState(isTeacher ? user?.assignedClassId || "" : "");
+  const [filterClass, setFilterClass] = useState(isTeacher ? (user?.assignedClasses?.[0] || "") : "");
 
   const { data: students, isLoading } = useQuery({
     queryKey: ["students", filterClass],
@@ -30,8 +30,8 @@ export default function Students() {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<Student>();
 
   useEffect(() => {
-    if (isTeacher && user?.assignedClassId) {
-      setValue("classStreamId", user.assignedClassId);
+    if (isTeacher && user?.assignedClasses?.length) {
+      setValue("classStreamId", user.assignedClasses[0]);
     }
   }, [isTeacher, user, setValue]);
 
@@ -61,7 +61,7 @@ export default function Students() {
   const onSubmit = (data: Student) => {
     const payload = {
       ...data,
-      classStreamId: data.classStreamId || (isTeacher ? user?.assignedClassId : undefined),
+      classStreamId: data.classStreamId || (isTeacher ? user?.assignedClasses?.[0] : undefined),
     };
     if (editing) {
       updateMutation.mutate({ id: editing.id, data: payload });
@@ -80,7 +80,7 @@ export default function Students() {
     setShowForm(false);
     setEditing(null);
     reset();
-    if (isTeacher) setValue("classStreamId", user?.assignedClassId || "");
+    if (isTeacher) setValue("classStreamId", user?.assignedClasses?.[0] || "");
   };
 
   return (
@@ -89,7 +89,7 @@ export default function Students() {
         <div>
           <h1 className="page-title">Students</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {isTeacher ? `Managing students for ${classes?.find(c => c.id === user?.assignedClassId)?.name || 'your class'}` : 'Manage student records and admissions'}
+            {isTeacher ? `Managing students for ${classes?.find(c => c.id === user?.assignedClasses?.[0])?.name || 'your class'}` : 'Manage student records and admissions'}
           </p>
         </div>
         <button onClick={() => { cancelForm(); setShowForm(true); }} className="btn-primary text-sm shadow-lg shadow-brand-500/20">
@@ -225,7 +225,7 @@ export default function Students() {
                     <td className="px-4 py-3">
                       <span className="badge-ink capitalize">{s.gender}</span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{s.classStream?.name || <span className="text-border">—</span>}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{s.classStream?.name || <span className="text-muted-foreground/40">—</span>}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs max-w-[160px] truncate">{s.parentName || <span className="text-border">—</span>}</td>
                     <td className="px-4 py-3 text-right">
                       <button onClick={() => startEdit(s)} className="btn-ghost text-xs p-1.5" title="Edit">

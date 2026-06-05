@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { classStreamsApi } from "../../../api/classStreams";
 import { studentsApi } from "../../../api/students";
 import { subjectsApi } from "../../../api/subjects";
+import { systemApi } from "../../../api/system";
 import { Link } from "react-router-dom";
-import { Users, GraduationCap, BookOpen, ArrowRight, Shield, Award, TrendingUp, FileText } from "lucide-react";
+import { Users, GraduationCap, BookOpen, ArrowRight, Shield, Award, TrendingUp, FileText, Server, Activity, UserPlus, Database, Clock, List } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useAuth } from "../../../contexts/AuthContext";
 
@@ -15,23 +16,29 @@ export default function Dashboard() {
   const { data: classes } = useQuery({ queryKey: ["class-streams"], queryFn: () => classStreamsApi.getAll().then((r) => r.data) });
   const { data: students } = useQuery({ queryKey: ["students"], queryFn: () => studentsApi.getAll().then((r) => r.data) });
   const { data: subjects } = useQuery({ queryKey: ["subjects"], queryFn: () => subjectsApi.getAll().then((r) => r.data) });
+  const { data: systemStatus } = useQuery({
+    queryKey: ["system-status"],
+    queryFn: () => systemApi.getStatus().then((r) => r.data),
+    enabled: isAdmin,
+    refetchInterval: 30000,
+  });
 
-  const teacherClass = classes?.find(c => c.id === user?.assignedClassId);
-  const classStudents = students?.filter(s => s.classStreamId === user?.assignedClassId) || [];
+  const teacherClass = classes?.find(c => c.id === user?.assignedClasses?.[0]);
+  const classStudents = students?.filter(s => s.classStreamId === user?.assignedClasses?.[0]) || [];
 
   const stats = isAdmin ? [
     { label: "Class Streams", value: classes?.length || 0, icon: Users, color: "bg-brand-500", href: "/dashboard/class-streams" },
     { label: "Total Students", value: students?.length || 0, icon: GraduationCap, color: "bg-accent-500", href: "/dashboard/students" },
     { label: "Subjects", value: subjects?.length || 0, icon: BookOpen, color: "bg-blue-500", href: "/dashboard/subjects" },
   ] : [
-    { label: "My Class", value: teacherClass?.name || "Assigning...", icon: Shield, color: "bg-brand-500", href: `/dashboard/class-streams/${user?.assignedClassId}` },
+    { label: "My Class", value: teacherClass?.name || "Assigning...", icon: Shield, color: "bg-brand-500", href: `/dashboard/class-streams/${user?.assignedClasses?.[0]}` },
     { label: "My Students", value: classStudents.length, icon: Users, color: "bg-accent-500", href: "/dashboard/students" },
     { label: "Class Subjects", value: subjects?.length || 0, icon: BookOpen, color: "bg-blue-500", href: "/dashboard/subjects" },
   ];
 
   const classData = isAdmin ? classes?.map((c) => ({
     name: c.name,
-    Students: c.students?.length || students?.filter((s) => s.classStreamId === c.id).length || 0,
+    Students: c.studentCount || students?.filter((s) => s.classStreamId === c.id).length || 0,
   })) || [] : [];
 
   const COLORS = ['var(--primary)', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'];
@@ -167,26 +174,91 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-
-          <div className="card-static p-6">
-            <h2 className="text-lg font-bold text-foreground mb-4">System Status</h2>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <div className="text-xs font-medium">Database Connected</div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <div className="text-xs font-medium">Backup Active</div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                <div className="text-xs font-medium">V1.2.0 Stable</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
+      {isAdmin && systemStatus && (
+        <div className="card-static p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+                <Server className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">System Status</h2>
+                <p className="text-xs text-muted-foreground">Live telemetry &middot; refreshes every 30s</p>
+              </div>
+            </div>
+            <Link to="/dashboard/logs" className="btn-secondary text-xs">
+              <List className="w-3.5 h-3.5" />
+              View Logs
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+            <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <Database className={`w-4 h-4 ${systemStatus.directus === 'connected' ? 'text-emerald-500' : 'text-red-500'}`} />
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Directus</span>
+              </div>
+              <div className={`text-sm font-bold ${systemStatus.directus === 'connected' ? 'text-emerald-600' : 'text-red-600'}`}>
+                {systemStatus.directus === 'connected' ? 'Connected' : systemStatus.directus === 'error' ? 'Error' : 'Disconnected'}
+              </div>
+            </div>
+            <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-brand-500" />
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Uptime</span>
+              </div>
+              <div className="text-sm font-bold text-foreground">
+                {systemStatus.uptime.days > 0 && `${systemStatus.uptime.days}d `}
+                {systemStatus.uptime.hours}h {systemStatus.uptime.minutes}m
+              </div>
+            </div>
+            <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4 text-blue-500" />
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Users</span>
+              </div>
+              <div className="text-sm font-bold text-foreground">{systemStatus.counts.users} total</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">{systemStatus.pendingUsers} pending approval</div>
+            </div>
+            <div className="p-4 rounded-xl bg-background border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="w-4 h-4 text-accent-500" />
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Data</span>
+              </div>
+              <div className="text-sm font-bold text-foreground">{systemStatus.counts.students} students</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">{systemStatus.counts.classes} classes</div>
+            </div>
+          </div>
+
+          {systemStatus.recentSignups.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <UserPlus className="w-4 h-4 text-muted-foreground" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recent Signups (7 days)</h3>
+              </div>
+              <div className="space-y-1">
+                {systemStatus.recentSignups.map((signup) => (
+                  <div key={signup.id} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-background border border-border text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 flex items-center justify-center text-[10px] font-bold text-brand-600 shrink-0">
+                        {signup.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-medium text-foreground truncate">{signup.name}</span>
+                      <span className="text-muted-foreground hidden sm:inline">{signup.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted font-bold text-muted-foreground uppercase">{signup.role}</span>
+                      <span className="text-muted-foreground">{new Date(signup.date).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

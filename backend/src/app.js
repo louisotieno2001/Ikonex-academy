@@ -12,6 +12,7 @@ const studentRoutes = require('./routes/students.routes');
 const subjectRoutes = require('./routes/subjects.routes');
 const assessmentRoutes = require('./routes/assessments.routes');
 const reportRoutes = require('./routes/reports.routes');
+const systemRoutes = require('./routes/system.routes');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/system', systemRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

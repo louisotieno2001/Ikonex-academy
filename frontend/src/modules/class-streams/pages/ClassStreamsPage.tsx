@@ -4,9 +4,12 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Pencil, Trash2, Users, X } from "lucide-react";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export default function ClassStreams() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<ClassStream | null>(null);
 
@@ -67,10 +70,12 @@ export default function ClassStreams() {
           <h1 className="page-title">Class Streams</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage classes and view student distribution</p>
         </div>
-        <button onClick={() => { cancelForm(); setShowForm(true); }} className="btn-primary text-sm">
-          <Plus className="w-4 h-4" />
-          Add Class
-        </button>
+        {isAdmin && (
+          <button onClick={() => { cancelForm(); setShowForm(true); }} className="btn-primary text-sm">
+            <Plus className="w-4 h-4" />
+            Add Class
+          </button>
+        )}
       </div>
 
       {showForm && (
@@ -132,18 +137,20 @@ export default function ClassStreams() {
                   </div>
                 </div>
               </Link>
-              <div className="flex gap-1 shrink-0">
-                <button onClick={() => startEdit(s)} className="btn-ghost text-xs p-1.5" title="Edit">
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => { if (confirm("Delete this class?")) deleteMutation.mutate(s.id); }}
-                  className="btn-ghost text-xs p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50"
-                  title="Delete"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              {isAdmin && (
+                <div className="flex gap-1 shrink-0">
+                  <button onClick={() => startEdit(s)} className="btn-ghost text-xs p-1.5" title="Edit">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => { if (confirm("Delete this class?")) deleteMutation.mutate(s.id); }}
+                    className="btn-ghost text-xs p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {streams?.length === 0 && (

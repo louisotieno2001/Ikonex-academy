@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { classStreamsApi } from "../../../api/classStreams";
+import { studentsApi } from "../../../api/students";
 import { reportsApi, GradingScale } from "../../../api/reports";
 import { useState } from "react";
 import { FileText, Download, Search, BarChart3, Settings, Plus, Save, Trash2, Award, Check, X } from "lucide-react";
@@ -14,7 +15,7 @@ export default function Reports() {
   const isTeacher = user?.role === "teacher";
 
   const [activeTab, setActiveTab] = useState<"class" | "student" | "scales">("class");
-  const [classId, setClassId] = useState(isTeacher ? user?.assignedClassId || "" : "");
+  const [classId, setClassId] = useState(isTeacher ? (user?.assignedClasses?.[0] || "") : "");
   const [studentId, setStudentId] = useState("");
   const [term, setTerm] = useState("term1");
   const [academicYear, setAcademicYear] = useState(new Date().getFullYear().toString());
@@ -28,9 +29,9 @@ export default function Reports() {
     queryFn: () => classStreamsApi.getAll().then((r) => r.data),
   });
 
-  const { data: classDetail } = useQuery({
-    queryKey: ["class-stream", classId],
-    queryFn: () => classStreamsApi.getById(classId).then((r) => r.data),
+  const { data: classStudents } = useQuery({
+    queryKey: ["students", classId],
+    queryFn: () => studentsApi.getAll({ classStreamId: classId }).then((r) => r.data),
     enabled: !!classId,
   });
 
@@ -255,7 +256,7 @@ export default function Reports() {
                   <label className="label">Select Student</label>
                   <select className="input" value={studentId} onChange={(e) => setStudentId(e.target.value)} disabled={!classId}>
                     <option value="">Choose student...</option>
-                    {classDetail?.students?.map((s: any) => (
+                    {classStudents?.map((s: any) => (
                       <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.admissionNumber})</option>
                     ))}
                   </select>

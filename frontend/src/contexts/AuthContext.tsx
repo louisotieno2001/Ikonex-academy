@@ -7,7 +7,7 @@ interface User {
   firstName: string;
   lastName: string;
   role: string;
-  assignedClassId?: string;
+  assignedClasses?: string[];
 }
 
 interface AuthContextType {

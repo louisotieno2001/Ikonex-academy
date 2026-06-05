@@ -20,7 +20,7 @@ export interface User {
   lastName: string;
   role: string;
   suspend?: boolean;
-  assignedClassId?: string;
+  assignedClasses?: string[];
   date_created?: string;
 }
 
@@ -30,7 +30,7 @@ export const authApi = {
   getMe: () => apiClient.get("/auth/me"),
   updateMe: (data: Partial<User>) => apiClient.patch("/auth/me", data),
   listUsers: () => apiClient.get<User[]>("/auth/users"),
-  updateUserRole: (id: string, data: { role?: string; assignedClassId?: string | null }) =>
+  updateUserRole: (id: string, data: { role?: string; assignedClasses?: string[] }) =>
     apiClient.patch<User>(`/auth/users/${id}/role`, data),
   toggleSuspend: (id: string) => apiClient.patch<{ id: string; suspend: boolean }>(`/auth/users/${id}/suspend`),
   deleteUser: (id: string) => apiClient.delete(`/auth/users/${id}`),

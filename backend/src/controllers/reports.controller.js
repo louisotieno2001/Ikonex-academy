@@ -47,9 +47,11 @@ const deleteGradingScale = async (req, res) => {
   }
 };
 
-const getTeacherClassId = async (userId) => {
-  const result = await getItem('users', userId, { fields: 'assignedClassId' });
-  return result.data?.assignedClassId || null;
+const getTeacherClassIds = async (userId) => {
+  const result = await getItem('users', userId, { fields: 'assignedClasses' });
+  const val = result.data?.assignedClasses;
+  if (!val) return [];
+  return Array.isArray(val) ? val : [val];
 };
 
 const getStudentReport = async (req, res) => {
@@ -66,9 +68,9 @@ const getStudentReport = async (req, res) => {
     const student = studentResult.data;
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const studentClassId = student.classStreamId?.id || student.classStreamId;
-      if (classId !== studentClassId) {
+      if (!classIds.includes(studentClassId)) {
         return res.status(403).json({ error: 'You can only view reports for your class' });
       }
     }
@@ -123,9 +125,13 @@ const getStudentReport = async (req, res) => {
     });
     const allAssessments = allAssessmentsResult.data || [];
 
+    const studentClassId = student.classStreamId?.id || student.classStreamId;
     const classStudentIds = [...new Set(
       allAssessments
-        .filter((a) => a.studentId?.classStreamId === student.classStreamId)
+        .filter((a) => {
+          const sid = a.studentId?.classStreamId?.id || a.studentId?.classStreamId;
+          return sid === studentClassId;
+        })
         .map((a) => a.studentId?.id || a.studentId)
     )];
 
@@ -176,8 +182,8 @@ const getClassReport = async (req, res) => {
     const { classStreamId } = req.params;
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (classId !== classStreamId) {
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (!classIds.includes(classStreamId)) {
         return res.status(403).json({ error: 'You can only view reports for your assigned class' });
       }
     }
@@ -261,9 +267,9 @@ const getStudentReportPdf = async (req, res) => {
     const student = studentResult.data;
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const studentClassId = student.classStreamId?.id || student.classStreamId;
-      if (classId !== studentClassId) {
+      if (!classIds.includes(studentClassId)) {
         return res.status(403).json({ error: 'You can only view reports for your class' });
       }
     }
@@ -312,9 +318,13 @@ const getStudentReportPdf = async (req, res) => {
     });
     const allAssessments = allAssessmentsResult.data || [];
 
+    const studentClassId = student.classStreamId?.id || student.classStreamId;
     const classStudentIds = [...new Set(
       allAssessments
-        .filter((a) => a.studentId?.classStreamId === student.classStreamId)
+        .filter((a) => {
+          const sid = a.studentId?.classStreamId?.id || a.studentId?.classStreamId;
+          return sid === studentClassId;
+        })
         .map((a) => a.studentId?.id || a.studentId)
     )];
 
@@ -361,8 +371,8 @@ const getClassReportPdf = async (req, res) => {
     const { classStreamId } = req.params;
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
-      if (classId !== classStreamId) {
+      const classIds = await getTeacherClassIds(req.user.id);
+      if (!classIds.includes(classStreamId)) {
         return res.status(403).json({ error: 'You can only view reports for your assigned class' });
       }
     }

@@ -18,7 +18,7 @@ import { toast } from "sonner";
 export default function UserManagementPage() {
   const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [approveClassIds, setApproveClassIds] = useState<Record<string, string>>({});
+  const [approveClasses, setApproveClasses] = useState<Record<string, string[]>>({});
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["users"],
@@ -31,8 +31,8 @@ export default function UserManagementPage() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: ({ id, role, assignedClassId }: { id: string; role: string; assignedClassId?: string | null }) =>
-      authApi.updateUserRole(id, { role, assignedClassId }),
+    mutationFn: ({ id, role, assignedClasses }: { id: string; role: string; assignedClasses?: string[] }) =>
+      authApi.updateUserRole(id, { role, assignedClasses }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("User updated successfully");
@@ -60,8 +60,25 @@ export default function UserManagementPage() {
   });
 
   const handleApprove = (user: User) => {
-    const assignedClassId = approveClassIds[user.id] || null;
-    updateRoleMutation.mutate({ id: user.id, role: "teacher", assignedClassId });
+    const selected = approveClasses[user.id] || [];
+    updateRoleMutation.mutate({ id: user.id, role: "teacher", assignedClasses: selected });
+  };
+
+  const toggleApproveClass = (userId: string, classId: string) => {
+    setApproveClasses(prev => {
+      const current = prev[userId] || [];
+      const updated = current.includes(classId)
+        ? current.filter(id => id !== classId)
+        : [...current, classId];
+      return { ...prev, [userId]: updated };
+    });
+  };
+
+  const toggleTeacherClass = (userId: string, classId: string, currentClasses: string[] = []) => {
+    const updated = currentClasses.includes(classId)
+      ? currentClasses.filter(id => id !== classId)
+      : [...currentClasses, classId];
+    updateRoleMutation.mutate({ id: userId, role: "teacher", assignedClasses: updated });
   };
 
   if (isLoading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading users...</div>;
@@ -101,17 +118,23 @@ export default function UserManagementPage() {
                 <h3 className="font-bold text-foreground">{user.firstName} {user.lastName}</h3>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
                 <div className="mt-3 mb-4">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Assign Class (optional)</label>
-                  <select
-                    value={approveClassIds[user.id] || ""}
-                    onChange={(e) => setApproveClassIds(prev => ({ ...prev, [user.id]: e.target.value }))}
-                    className="input text-xs py-1.5"
-                  >
-                    <option value="">No class (assign later)</option>
-                    {classes?.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Assign Classes (optional)</label>
+                  <div className="space-y-1 max-h-32 overflow-y-auto border border-border rounded-lg p-2 bg-white">
+                    {classes?.map((c) => {
+                      const checked = (approveClasses[user.id] || []).includes(c.id);
+                      return (
+                        <label key={c.id} className="flex items-center gap-2 text-xs cursor-pointer hover:bg-muted/50 rounded px-1.5 py-1 transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleApproveClass(user.id, c.id)}
+                            className="w-3.5 h-3.5 rounded border-border text-brand-600 focus:ring-brand-500"
+                          />
+                          {c.name}
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button 
@@ -172,16 +195,22 @@ export default function UserManagementPage() {
                     </td>
                     <td className="p-4">
                       {user.role === 'teacher' ? (
-                        <select
-                          value={user.assignedClassId || ""}
-                          onChange={(e) => updateRoleMutation.mutate({ id: user.id, role: "teacher", assignedClassId: e.target.value || null })}
-                          className="text-xs bg-muted border-none rounded-md px-2 py-1 focus:ring-1 ring-brand-500 w-full max-w-[150px]"
-                        >
-                          <option value="">No Class</option>
-                          {classes?.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
+                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                          {classes?.map((c) => {
+                            const checked = (user.assignedClasses || []).includes(c.id);
+                            return (
+                              <label key={c.id} className="flex items-center gap-2 text-xs cursor-pointer hover:bg-muted/50 rounded px-1.5 py-0.5 transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => toggleTeacherClass(user.id, c.id, user.assignedClasses)}
+                                  className="w-3 h-3 rounded border-border text-brand-600 focus:ring-brand-500"
+                                />
+                                {c.name}
+                              </label>
+                            );
+                          })}
+                        </div>
                       ) : (
                         <span className="text-xs text-muted-foreground">Global Access</span>
                       )}

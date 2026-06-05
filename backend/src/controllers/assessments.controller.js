@@ -1,8 +1,10 @@
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
-const getTeacherClassId = async (userId) => {
-  const result = await getItem('users', userId, { fields: 'assignedClassId' });
-  return result.data?.assignedClassId || null;
+const getTeacherClassIds = async (userId) => {
+  const result = await getItem('users', userId, { fields: 'assignedClasses' });
+  const val = result.data?.assignedClasses;
+  if (!val) return [];
+  return Array.isArray(val) ? val : [val];
 };
 
 const list = async (req, res) => {
@@ -22,10 +24,10 @@ const list = async (req, res) => {
     let assessments = result.data || [];
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       assessments = assessments.filter((a) => {
         const studentClassId = a.studentId?.classStreamId?.id || a.studentId?.classStreamId;
-        return studentClassId === classId;
+        return classIds.includes(studentClassId);
       });
     }
 
@@ -61,9 +63,9 @@ const getById = async (req, res) => {
     }
 
     if (req.user.role !== 'admin') {
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const studentClassId = result.data.studentId?.classStreamId?.id || result.data.studentId?.classStreamId;
-      if (studentClassId !== classId) {
+      if (!classIds.includes(studentClassId)) {
         return res.status(403).json({ error: 'You can only view assessments for your class' });
       }
     }
@@ -89,9 +91,9 @@ const create = async (req, res) => {
       if (!student.data) return res.status(404).json({ error: 'Student not found' });
 
       if (req.user.role !== 'admin') {
-        const classId = await getTeacherClassId(req.user.id);
+        const classIds = await getTeacherClassIds(req.user.id);
         const studentClassId = student.data.classStreamId?.id || student.data.classStreamId;
-        if (studentClassId !== classId) {
+        if (!classIds.includes(studentClassId)) {
           return res.status(403).json({ error: 'You can only assess students in your class' });
         }
       }
@@ -134,9 +136,9 @@ const update = async (req, res) => {
     if (req.user.role !== 'admin') {
       const existing = await getItem('assessments', id, { fields: '*,studentId.*' });
       if (!existing.data) return res.status(404).json({ error: 'Assessment not found' });
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const studentClassId = existing.data.studentId?.classStreamId?.id || existing.data.studentId?.classStreamId;
-      if (studentClassId !== classId) {
+      if (!classIds.includes(studentClassId)) {
         return res.status(403).json({ error: 'You can only update assessments for your class' });
       }
     }
@@ -156,9 +158,9 @@ const remove = async (req, res) => {
     if (req.user.role !== 'admin') {
       const existing = await getItem('assessments', id, { fields: '*,studentId.*' });
       if (!existing.data) return res.status(404).json({ error: 'Assessment not found' });
-      const classId = await getTeacherClassId(req.user.id);
+      const classIds = await getTeacherClassIds(req.user.id);
       const studentClassId = existing.data.studentId?.classStreamId?.id || existing.data.studentId?.classStreamId;
-      if (studentClassId !== classId) {
+      if (!classIds.includes(studentClassId)) {
         return res.status(403).json({ error: 'You can only delete assessments for your class' });
       }
     }

@@ -7,6 +7,7 @@ export interface ClassStream {
   description?: string;
   isActive: boolean;
   students?: any[];
+  studentCount?: number;
   classSubjects?: any[];
   createdAt: string;
 }
