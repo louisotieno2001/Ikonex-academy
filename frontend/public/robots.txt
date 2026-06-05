@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://hustlerati.com/sitemap.xml

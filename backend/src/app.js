@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const config = require('./config');
 
+const path = require('path');
 const authRoutes = require('./routes/auth.routes');
 const classStreamRoutes = require('./routes/classStreams.routes');
 const studentRoutes = require('./routes/students.routes');
@@ -14,6 +15,7 @@ const assessmentRoutes = require('./routes/assessments.routes');
 const reportRoutes = require('./routes/reports.routes');
 const systemRoutes = require('./routes/system.routes');
 const attendanceRoutes = require('./routes/attendance.routes');
+const docsRoutes = require('./routes/docs.routes');
 
 const app = express();
 
@@ -30,6 +32,9 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 app.set('trust proxy', 1);
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Ikonex Academy API is running' });
@@ -43,6 +48,8 @@ app.use('/api/assessments', assessmentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/attendance', attendanceRoutes);
+
+app.use('/', docsRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

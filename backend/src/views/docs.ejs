@@ -1,0 +1,403 @@
+<%- include('partials/head', { title: 'Documentation' }) %>
+<%- include('partials/sidebar', { currentPage: 'docs' }) %>
+
+<div class="topbar">
+  <button id="sidebar-toggle" class="mobile-toggle" aria-label="Toggle sidebar">
+    <i data-lucide="menu"></i>
+  </button>
+  <div class="breadcrumb">
+    <i data-lucide="book-open" style="width:16px;height:16px"></i>
+    <a href="/">Dashboard</a>
+    <span class="sep"><i data-lucide="chevron-right" style="width:12px;height:12px"></i></span>
+    <span>Documentation</span>
+  </div>
+</div>
+
+<div class="hero-bar">
+  <h1>Documentation</h1>
+  <p>Ikonex Academy — Full system breakdown, folder-by-folder, with tech decisions and external references.</p>
+</div>
+
+<div class="content wide">
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" data-tab="backend">
+      <i data-lucide="server"></i>
+      Backend
+    </button>
+    <button class="tab-btn" data-tab="frontend">
+      <i data-lucide="monitor"></i>
+      Frontend
+    </button>
+    <button class="tab-btn" data-tab="directus">
+      <i data-lucide="database"></i>
+      Directus
+    </button>
+    <button class="tab-btn" data-tab="postgresql">
+      <i data-lucide="hard-drive"></i>
+      PostgreSQL
+    </button>
+    <button class="tab-btn" data-tab="architecture">
+      <i data-lucide="git-branch"></i>
+      Architecture
+    </button>
+  </div>
+
+  <!-- Tab: Backend -->
+  <div class="tab-content" id="tab-backend">
+    <div class="section-card">
+      <h2>Introduction</h2>
+      <p>The backend is an <strong>Express.js</strong> API server that acts as a middleware layer between the React frontend and <strong>Directus</strong> (headless CMS). Instead of exposing Directus directly to the client, all requests pass through this Express server, which adds:</p>
+      <ul>
+        <li><strong>Authentication</strong> with JWT access/refresh tokens and bcrypt password hashing</li>
+        <li><strong>Role-based access control</strong> for admin and teacher roles</li>
+        <li><strong>Business logic</strong> — grade computation (50/50 exam/CA split), position ranking, PDF report generation</li>
+        <li><strong>Data normalization</strong> — transforms Directus responses into consistent frontend-friendly shapes</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2>How to Run</h2>
+      <pre><code>cd backend
+npm install
+cp ../.env .          # ensure DIRECTUS_TOKEN and JWT_SECRET are set
+npm run dev           # nodemon, hot-reload on port 9002</code></pre>
+      <p>Requires <code>DIRECTUS_URL</code> and <code>DIRECTUS_TOKEN</code> in the environment (Directus must be running).</p>
+    </div>
+
+    <div class="section-card">
+      <h2>Folder Structure</h2>
+
+      <div class="file-block">
+        <h4>app.js</h4>
+        <p>Express app entry point. Registers global middleware (Helmet, CORS, Morgan, CookieParser, JSON parser), mounts route modules under <code>/api/</code>, serves docs routes at <code>/</code> and <code>/docs</code>, and defines global 404/500 error handlers. Configures EJS view engine and static file serving for <code>/public</code>. Listens on the configured port.</p>
+      </div>
+
+      <div class="file-block">
+        <h4>config/index.js</h4>
+        <p>Loads environment variables via <code>dotenv</code>. Exposes a typed config object for port, CORS origin, Directus URL/token, JWT secret/expiry. Validates that required keys (<code>DIRECTUS_TOKEN</code>, <code>JWT_SECRET</code>) are present at startup — the server will crash with a clear message if they are missing.</p>
+      </div>
+
+      <div class="file-block">
+        <h4>controllers/</h4>
+        <p>Each resource has a dedicated controller file. Controllers receive <code>(req, res)</code>, extract query parameters / body / route params, call Directus via services, apply business logic, and return JSON responses (or PDF streams).</p>
+        <ul>
+          <li><strong>auth.controller.js</strong> — Login, register, refresh tokens, profile CRUD, user management (admin). Uses bcrypt for password comparison, JWT for tokens. Writes system logs on signup/login.</li>
+          <li><strong>students.controller.js</strong> — CRUD for students. Validates unique admission numbers. Scopes access by class for teachers.</li>
+          <li><strong>assessments.controller.js</strong> — CRUD for exam/CA scores. Prevents duplicates, validates score limits, filters by type/term/year/class.</li>
+          <li><strong>attendance.controller.js</strong> — Lists records, bulk upserts attendance, returns dates and aggregate stats.</li>
+          <li><strong>classStreams.controller.js</strong> — CRUD for class streams with computed student counts.</li>
+          <li><strong>subjects.controller.js</strong> — CRUD for subjects plus assign/unassign to class streams.</li>
+          <li><strong>reports.controller.js</strong> — JSON and PDF report cards. 50/50 score split, per-subject positions, grading scale CRUD.</li>
+          <li><strong>system.controller.js</strong> — Telemetry endpoint and logs viewer.</li>
+          <li><strong>docs.controller.js</strong> — Renders EJS views for <code>/</code> and <code>/docs</code> with live Directus status.</li>
+        </ul>
+      </div>
+
+      <div class="file-block">
+        <h4>routes/</h4>
+        <p>Thin route modules, one per resource. Each creates an <code>express.Router()</code>, applies auth middleware, maps methods + paths to controller functions. Routes are mounted in <code>app.js</code> under <code>/api/:resource</code>.</p>
+      </div>
+
+      <div class="file-block">
+        <h4>middleware/auth.js</h4>
+        <p>JWT verification middleware. <code>authenticate</code> extracts Bearer token, verifies against <code>JWT_SECRET</code> and issuer, sets <code>req.user</code>. <code>authorize(...roles)</code> checks role. <code>requireRole(...)</code> chains both.</p>
+      </div>
+
+      <div class="file-block">
+        <h4>services/directus.service.js</h4>
+        <p>Axios-based client for Directus REST API. Exports CRUD helpers, handles parameter flattening, logs all requests.</p>
+      </div>
+
+      <div class="file-block">
+        <h4>services/grades.js</h4>
+        <p>Grading engine. Caches grading scales from Directus. <code>determineGrade</code> converts score to percentage and matches grade. <code>calculatePosition</code> implements standard competition ranking ("1224" style).</p>
+      </div>
+
+      <div class="file-block">
+        <h4>services/pdf.js</h4>
+        <p>PDF generation using <strong>PDFKit</strong>. <code>generateReportCard</code> creates styled A4 report card with brand-colored header, student info, subject table (with per-subject positions and color-coded grades), totals, and signature lines.</p>
+      </div>
+
+      <div class="file-block">
+        <h4>views/ &amp; public/</h4>
+        <p>EJS templates (<code>views/</code>) and static assets (<code>public/css</code>, <code>public/js</code>) for the documentation UI. Rendered by the docs controller with Lucide icons and dark theme matching the frontend.</p>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>Tech Decisions</h2>
+      <ul>
+        <li><strong>Express over Fastify/NestJS</strong> — Lightweight, zero-config, vast ecosystem. The API surface is simple (CRUD + reports), so Express's simplicity is a strength.</li>
+        <li><strong>Directus proxy pattern</strong> — Directus handles auth, data persistence, and admin panel. The Express server adds business logic (scoring, ranking, PDF generation) that Directus cannot express.</li>
+        <li><strong>JWT over sessions</strong> — Stateless auth suitable for an SPA. Short-lived access tokens (15m) with longer-lived refresh tokens stored in localStorage.</li>
+        <li><strong>PDFKit over Puppeteer</strong> — PDFKit generates PDFs programmatically without a browser. Lighter, faster, and simpler for structured report cards.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2>External Links</h2>
+      <a class="ext-link" href="https://expressjs.com/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Express.js Docs</a>
+      <a class="ext-link" href="https://docs.directus.io/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Directus Docs</a>
+      <a class="ext-link" href="https://pdfkit.org/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> PDFKit Docs</a>
+      <a class="ext-link" href="https://axios-http.com/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Axios Docs</a>
+      <a class="ext-link" href="https://jwt.io/introduction" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> JWT Introduction</a>
+      <a class="ext-link" href="https://ejs.co/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> EJS Docs</a>
+    </div>
+  </div>
+
+  <!-- Tab: Frontend -->
+  <div class="tab-content" id="tab-frontend">
+    <div class="section-card">
+      <h2>Introduction</h2>
+      <p>The frontend is a <strong>React 18</strong> single-page application built with <strong>TypeScript</strong>, <strong>Vite</strong>, and <strong>Tailwind CSS</strong>. It communicates with the Express backend via a typed API client layer. The UI is organized into feature modules (assessments, attendance, reports, etc.), each with its own page component and API bindings.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>How to Run</h2>
+      <pre><code>cd frontend
+npm install
+npm run dev           # Vite dev server on port 9001, proxies /api to :9002
+npm run typecheck     # tsc --noEmit, catches type errors
+npm run build         # production build</code></pre>
+      <p>The Vite dev server proxies <code>/api/*</code> requests to the backend. For production, the built static files are served by an Nginx container.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>Folder Structure</h2>
+
+      <div class="file-block">
+        <h4>App.tsx</h4>
+        <p>Root component with React Router route definitions. Wraps authenticated routes in a <code>ProtectedRoute</code> component. Public routes: <code>/</code>, <code>/login</code>, <code>/signup</code>, <code>/approval</code>.</p>
+      </div>
+
+      <div class="file-block">
+        <h4>components/Layout.tsx</h4>
+        <p>Main dashboard shell. Sticky sidebar with role-filtered navigation. Header with breadcrumb, mobile hamburger menu, and dark/light theme toggle.</p>
+      </div>
+
+      <div class="file-block">
+        <h4>contexts/</h4>
+        <ul>
+          <li><strong>AuthContext.tsx</strong> — Auth state management with localStorage persistence.</li>
+          <li><strong>ThemeContext.tsx</strong> — Dark/light mode toggle with localStorage persistence.</li>
+        </ul>
+      </div>
+
+      <div class="file-block">
+        <h4>api/</h4>
+        <p>Typed API client modules, one per resource. Each exports an interface and functions that call the corresponding backend endpoint via axios.</p>
+        <ul>
+          <li><strong>client.ts</strong> — Base axios instance with auth interceptors.</li>
+          <li><strong>auth.ts</strong> — Login, register, profile, user management.</li>
+          <li><strong>students.ts</strong> — Student CRUD.</li>
+          <li><strong>assessments.ts</strong> — Assessment CRUD.</li>
+          <li><strong>attendance.ts</strong> — Attendance list, mark, dates, stats.</li>
+          <li><strong>subjects.ts</strong> — Subject CRUD plus class assignment.</li>
+          <li><strong>classStreams.ts</strong> — Class stream CRUD.</li>
+          <li><strong>reports.ts</strong> — Grading scale CRUD, report JSON and PDF download.</li>
+          <li><strong>system.ts</strong> — System status and logs.</li>
+        </ul>
+      </div>
+
+      <div class="file-block">
+        <h4>modules/</h4>
+        <p>Self-contained feature modules with <code>pages/</code> directory and <code>index.ts</code> re-export.</p>
+        <ul>
+          <li><strong>auth/</strong> — LoginPage, SignupPage, ApprovalPage, UserManagementPage</li>
+          <li><strong>dashboard/</strong> — DashboardPage with stats, charts, quick actions</li>
+          <li><strong>students/</strong> — StudentsPage, StudentDetailPage</li>
+          <li><strong>class-streams/</strong> — ClassStreamsPage, ClassStreamDetailPage</li>
+          <li><strong>subjects/</strong> — SubjectsPage with class assignment</li>
+          <li><strong>assessments/</strong> — AssessmentsPage with filters and record form</li>
+          <li><strong>attendance/</strong> — AttendancePage with bulk toggle and history</li>
+          <li><strong>reports/</strong> — ReportsPage with class analysis and grading scales</li>
+          <li><strong>system/</strong> — LogsPage with audit log viewer</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h2>Tech Decisions</h2>
+      <ul>
+        <li><strong>React 18 over Vue/Svelte</strong> — Largest ecosystem, best TypeScript integration, most familiar to the team. React 18's automatic batching and concurrent features improve performance.</li>
+        <li><strong>TypeScript over JavaScript</strong> — Catches type errors at compile time, provides self-documenting interfaces.</li>
+        <li><strong>Vite over CRA/Next.js</strong> — Significantly faster dev (native ESM, instant HMR). No SSR requirement, so Next.js adds unnecessary complexity.</li>
+        <li><strong>Tailwind CSS over CSS-in-JS</strong> — Utility-first approach reduces CSS bundle size, enforces design consistency, avoids runtime overhead.</li>
+        <li><strong>TanStack Query over Redux</strong> — Automatic caching, background refetching, request deduplication. Reduces boilerplate significantly.</li>
+        <li><strong>Recharts over D3/Chart.js</strong> — React-native chart library with composable components.</li>
+        <li><strong>Axios over fetch</strong> — Interceptors for auth token injection and 401 handling.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2>External Links</h2>
+      <a class="ext-link" href="https://react.dev/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> React Docs</a>
+      <a class="ext-link" href="https://www.typescriptlang.org/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> TypeScript Docs</a>
+      <a class="ext-link" href="https://vite.dev/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Vite Docs</a>
+      <a class="ext-link" href="https://tailwindcss.com/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Tailwind CSS Docs</a>
+      <a class="ext-link" href="https://tanstack.com/query/latest" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> TanStack Query</a>
+      <a class="ext-link" href="https://recharts.org/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Recharts</a>
+      <a class="ext-link" href="https://lucide.dev/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Lucide Icons</a>
+    </div>
+  </div>
+
+  <!-- Tab: Directus -->
+  <div class="tab-content" id="tab-directus">
+    <div class="section-card">
+      <h2>Introduction</h2>
+      <p><strong>Directus</strong> is an open-source headless CMS that wraps PostgreSQL with a REST API, GraphQL, and an admin panel. In this project, Directus serves as the data persistence layer — it stores all records, manages relationships, handles user authentication, and provides the admin interface for schema configuration and data browsing.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>How to Run</h2>
+      <pre><code>docker compose up -d directus  # starts Directus on port 9000 (depends on postgres)
+# Admin panel: http://localhost:9000/admin
+# Login with ADMIN_EMAIL / ADMIN_PASSWORD from .env</code></pre>
+      <p>First-time startup may take 30–60 seconds for Directus to run its migration scripts. Container health check polls <code>/server/health</code> until ready.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>Collections</h2>
+      <p>Each collection is created manually through the Directus admin panel. The backend service account (identified by <code>DIRECTUS_TOKEN</code>) needs full CRUD permissions on all <code>items/*</code> endpoints.</p>
+      <table>
+        <tr><th>Collection</th><th>Purpose</th><th>Key Relationships</th></tr>
+        <tr><td><code>students</code></td><td>Student profiles</td><td>M2O → class_streams</td></tr>
+        <tr><td><code>subjects</code></td><td>Academic subjects</td><td>M2M → class_streams via class_subjects</td></tr>
+        <tr><td><code>class_streams</code></td><td>Class streams/grades</td><td>O2M → students, M2M → subjects</td></tr>
+        <tr><td><code>assessments</code></td><td>Exam and CA scores</td><td>M2O → students, M2O → subjects</td></tr>
+        <tr><td><code>attendance</code></td><td>Daily attendance records</td><td>M2O → students, M2O → class_streams</td></tr>
+        <tr><td><code>grading_scale</code></td><td>Grade boundaries</td><td>No relations</td></tr>
+        <tr><td><code>system_logs</code></td><td>Audit trail</td><td>M2O → directus_users</td></tr>
+        <tr><td><code>directus_users</code></td><td>User accounts</td><td>JSON assignedClasses for teachers</td></tr>
+      </table>
+    </div>
+
+    <div class="section-card">
+      <h2>Permissions</h2>
+      <ul>
+        <li><strong>Backend service token</strong> — Full access to all <code>items/*</code> CRUD. Set as <code>DIRECTUS_TOKEN</code> in <code>.env</code>.</li>
+        <li><strong>Admin users</strong> — Access via Express backend. Can view all classes, manage users, CRUD subjects/classes.</li>
+        <li><strong>Teacher users</strong> — Scoped to assigned classes via <code>assignedClasses</code> JSON array on <code>directus_users</code>.</li>
+        <li><strong>Role field</strong> — Stored as string (<code>admin</code>, <code>teacher</code>, <code>pending</code>). New signups default to <code>pending</code>.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2>Tech Decisions</h2>
+      <ul>
+        <li><strong>Directus over Strapi</strong> — More mature admin panel, better PostgreSQL support, simpler permission model.</li>
+        <li><strong>Directus over Sanity/Contentful</strong> — Self-hosted, no per-seat licensing, full control over schema and backups.</li>
+        <li><strong>Directus over custom CRUD code</strong> — Eliminates writing CRUD endpoints, migration scripts, and admin panel.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2>External Links</h2>
+      <a class="ext-link" href="https://docs.directus.io/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Directus Docs</a>
+      <a class="ext-link" href="https://docs.directus.io/reference/system/tokens.html" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> API Tokens</a>
+      <a class="ext-link" href="https://docs.directus.io/reference/system/collections.html" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Collections</a>
+      <a class="ext-link" href="https://docs.directus.io/reference/system/permissions.html" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Permissions</a>
+    </div>
+  </div>
+
+  <!-- Tab: PostgreSQL -->
+  <div class="tab-content" id="tab-postgresql">
+    <div class="section-card">
+      <h2>Introduction</h2>
+      <p>PostgreSQL 16 runs in a Docker container. The schema is managed entirely by Directus — collections and fields are created through the Directus admin interface, which auto-generates the underlying PostgreSQL tables, indexes, and relationships.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>How to Run</h2>
+      <pre><code>docker compose up -d postgres  # starts PostgreSQL on port 5432
+# Directus auto-migrates schema on startup</code></pre>
+      <p>Connection settings are configured via environment variables: <code>DB_HOST</code>, <code>DB_PORT</code>, <code>DB_DATABASE</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code>.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>Schema Overview</h2>
+      <table>
+        <tr><th>Collection</th><th>Purpose</th><th>Key Fields</th></tr>
+        <tr><td><code>students</code></td><td>Student profiles</td><td>admissionNumber (unique), classStreamId (M2O)</td></tr>
+        <tr><td><code>subjects</code></td><td>Academic subjects</td><td>name, code (unique), isActive</td></tr>
+        <tr><td><code>class_streams</code></td><td>Class streams</td><td>name, code (unique), description</td></tr>
+        <tr><td><code>class_subjects</code></td><td>Junction table</td><td>classStreamId (M2O), subjectId (M2O)</td></tr>
+        <tr><td><code>assessments</code></td><td>Exam/CA scores</td><td>type (exam|continuous_assessment), score, term, academicYear</td></tr>
+        <tr><td><code>attendance</code></td><td>Daily attendance</td><td>date, status (present|absent), term, academicYear, isLastDay</td></tr>
+        <tr><td><code>grading_scale</code></td><td>Grade boundaries</td><td>grade (A/B/C/F), lowerBound, upperBound, gradePoint</td></tr>
+        <tr><td><code>system_logs</code></td><td>Audit trail</td><td>action, description, level (info|warn|error)</td></tr>
+      </table>
+    </div>
+
+    <div class="section-card">
+      <h2>Tech Decisions</h2>
+      <ul>
+        <li><strong>PostgreSQL over MySQL</strong> — Better JSON support (used for <code>assignedClasses</code> array), superior indexing, full-text search, robust concurrent transactions.</li>
+        <li><strong>PostgreSQL over MongoDB</strong> — Highly relational data (students ↔ classes, assessments ↔ students/subjects). Document store would require manual joins and consistency management.</li>
+        <li><strong>Schema managed by Directus</strong> — Eliminates standalone migration scripts. Schema changes made through Directus UI and auto-applied to PostgreSQL.</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2>External Links</h2>
+      <a class="ext-link" href="https://www.postgresql.org/docs/16/" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> PostgreSQL 16 Docs</a>
+      <a class="ext-link" href="https://www.postgresql.org/docs/16/datatype-json.html" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> JSON Types</a>
+      <a class="ext-link" href="https://www.postgresql.org/docs/16/indexes.html" target="_blank" rel="noopener"><i data-lucide="external-link" style="width:14px;height:14px"></i> Indexes</a>
+    </div>
+  </div>
+
+  <!-- Tab: Architecture -->
+  <div class="tab-content" id="tab-architecture">
+    <div class="section-card">
+      <h2>System Design</h2>
+      <p>The system runs as four Docker containers orchestrated by Docker Compose:</p>
+      <pre><code>┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
+│ Frontend │────▶│ Backend  │────▶│ Directus │────▶│PostgreSQL│
+│ :9001    │     │ :9002    │     │ :9000    │     │ :5432    │
+└──────────┘     └──────────┘     └──────────┘     └──────────┘</code></pre>
+      <ul>
+        <li><strong>Frontend</strong> (Nginx, serving Vite-built static files) — Reverse proxies <code>/api/*</code> to backend</li>
+        <li><strong>Backend</strong> (Node.js + Express) — Business logic, auth, PDF generation</li>
+        <li><strong>Directus</strong> (PHP + Node.js) — Data API, admin panel, file uploads</li>
+        <li><strong>PostgreSQL</strong> — Single database for Directus and all application data</li>
+      </ul>
+    </div>
+
+    <div class="section-card">
+      <h2>Data Flow</h2>
+      <ol>
+        <li><strong>Browser</strong> loads the React SPA from the frontend container</li>
+        <li><strong>User action</strong> triggers API call through a typed client module</li>
+        <li><strong>Axios client</strong> attaches JWT Bearer token, sends request to <code>/api/...</code></li>
+        <li><strong>Vite dev proxy</strong> (or Nginx in production) forwards to backend</li>
+        <li><strong>Express middleware</strong> verifies JWT, sets <code>req.user</code></li>
+        <li><strong>Controller</strong> builds Directus filter, calls Directus service</li>
+        <li><strong>Directus service</strong> makes authenticated request to Directus REST API</li>
+        <li><strong>Directus</strong> queries PostgreSQL, applies permissions, returns results</li>
+        <li><strong>Controller</strong> normalizes response, applies business logic, returns JSON</li>
+      </ol>
+    </div>
+
+    <div class="section-card">
+      <h2>Deployment</h2>
+      <p>All services deployed via <strong>Docker Compose</strong>. Key considerations:</p>
+      <ul>
+        <li><strong>Secrets:</strong> <code>JWT_SECRET</code>, <code>DIRECTUS_TOKEN</code>, <code>DIRECTUS_KEY</code>, <code>DIRECTUS_SECRET</code>, <code>DB_PASSWORD</code> must be changed from defaults in production</li>
+        <li><strong>Persistence:</strong> PostgreSQL data in named Docker volume (<code>pgdata</code>). Directus uploads and extensions use separate volumes</li>
+        <li><strong>Health checks:</strong> Each container has a health check. Docker Compose uses <code>depends_on</code> with <code>condition: service_healthy</code></li>
+        <li><strong>Resource limits:</strong> 512MB for PostgreSQL and Directus, 256MB for backend, 128MB for frontend</li>
+        <li><strong>Networking:</strong> Internal Docker network. Exposed ports: 9000 (Directus admin), 9001 (Frontend), 9002 (Backend API)</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Ikonex Academy &mdash;
+  <a href="/">Dashboard</a> &middot;
+  <a href="/health">Health Check</a>
+</div>
+
+<%- include('partials/foot') %>

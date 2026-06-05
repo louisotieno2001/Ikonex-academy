@@ -1,0 +1,115 @@
+<%- include('partials/head', { title: 'Dashboard' }) %>
+<%- include('partials/sidebar', { currentPage: 'index' }) %>
+
+<div class="topbar">
+  <button id="sidebar-toggle" class="mobile-toggle" aria-label="Toggle sidebar">
+    <i data-lucide="menu"></i>
+  </button>
+  <div class="breadcrumb">
+    <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i>
+    <span>Dashboard</span>
+  </div>
+</div>
+
+<div class="hero-bar">
+  <h1>Ikonex Academy API</h1>
+  <p>School management backend — Express server powering assessments, attendance, report cards, and grading.</p>
+</div>
+
+<div class="content wide">
+  <div class="status-grid" style="margin-top:-2rem">
+    <div class="status-card">
+      <div class="label">Directus</div>
+      <div class="value">
+        <span class="dot <%= directus === 'connected' ? 'on' : 'off' %>"></span>
+        <%= directus === 'connected' ? 'Connected' : 'Disconnected' %>
+      </div>
+    </div>
+    <div class="status-card">
+      <div class="label">Latency</div>
+      <div class="value"><%= uptime !== null ? uptime.toLocaleString() + 'ms' : '\u2014' %></div>
+    </div>
+    <div class="status-card">
+      <div class="label">Users</div>
+      <div class="value"><%= counts ? counts.users : '\u2014' %></div>
+    </div>
+    <div class="status-card">
+      <div class="label">Students</div>
+      <div class="value"><%= counts ? counts.students : '\u2014' %></div>
+    </div>
+    <div class="status-card">
+      <div class="label">API Status</div>
+      <div class="value" style="color:#34d399">Operational</div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="icon-wrap" style="background:#0d737733;color:#34d399">
+        <i data-lucide="book-open"></i>
+      </div>
+      <h3>Documentation</h3>
+      <p>Full breakdown of every folder, file, and tech decision across backend, frontend, database, and Directus.</p>
+      <a href="/docs" class="ext-link" style="margin-top:0.75rem">
+        <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+        View Documentation
+      </a>
+    </div>
+    <div class="card">
+      <div class="icon-wrap" style="background:#05966933;color:#6ee7b7">
+        <i data-lucide="heart-pulse"></i>
+      </div>
+      <h3>Health Check</h3>
+      <p>Basic liveness probe for container orchestration and monitoring. Returns JSON status.</p>
+      <a href="/health" class="ext-link" style="margin-top:0.75rem">
+        <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+        Check Health
+      </a>
+    </div>
+    <div class="card">
+      <div class="icon-wrap" style="background:#6366f133;color:#a5b4fc">
+        <i data-lucide="layers"></i>
+      </div>
+      <h3>Tech Stack</h3>
+      <p>Node.js, Express, React 18, TypeScript, PostgreSQL 16, Directus, Tailwind CSS, Vite, PDFKit, Recharts.</p>
+      <a href="/docs?tab=architecture" class="ext-link" style="margin-top:0.75rem">
+        <i data-lucide="arrow-right" style="width:14px;height:14px"></i>
+        See Architecture
+      </a>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h2>API Endpoints</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Path</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="tag tag-be">GET</span></td><td><code>/health</code></td><td>Server health check</td></tr>
+        <tr><td><span class="tag tag-be">POST</span></td><td><code>/api/auth/login</code></td><td>Authenticate user</td></tr>
+        <tr><td><span class="tag tag-be">POST</span></td><td><code>/api/auth/register</code></td><td>Create account</td></tr>
+        <tr><td><span class="tag tag-be">GET</span></td><td><code>/api/auth/me</code></td><td>Current user info</td></tr>
+        <tr><td><span class="tag tag-be">GET</span></td><td><code>/api/students</code></td><td>List students</td></tr>
+        <tr><td><span class="tag tag-be">GET</span></td><td><code>/api/assessments</code></td><td>List assessments</td></tr>
+        <tr><td><span class="tag tag-be">GET</span></td><td><code>/api/attendance</code></td><td>List attendance records</td></tr>
+        <tr><td><span class="tag tag-be">POST</span></td><td><code>/api/attendance/mark</code></td><td>Batch mark attendance</td></tr>
+        <tr><td><span class="tag tag-be">GET</span></td><td><code>/api/reports/student/:id</code></td><td>Student report card (JSON)</td></tr>
+        <tr><td><span class="tag tag-be">GET</span></td><td><code>/api/reports/student/:id/pdf</code></td><td>Student PDF report card</td></tr>
+        <tr><td><span class="tag tag-be">GET</span></td><td><code>/api/system/status</code></td><td>System telemetry</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  Ikonex Academy API &mdash;
+  <a href="/docs">Documentation</a> &middot;
+  <a href="/health">Health</a>
+</div>
+
+<%- include('partials/foot') %>

@@ -1,0 +1,55 @@
+<div class="wrapper">
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-box">IA</div>
+      <div>
+        <h1>Ikonex Academy</h1>
+        <span>Management System</span>
+      </div>
+    </div>
+    <nav>
+      <a href="/" class="nav-item <%= currentPage === 'index' ? 'active' : '' %>" data-tab="">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <div class="sec <%= currentPage === 'docs' ? 'open' : '' %>">
+        <a href="/docs" class="nav-item <%= currentPage === 'docs' ? 'active' : '' %>">
+          <span style="display:flex;align-items:center;gap:0.65rem">
+            <i data-lucide="book-open"></i>
+            Documentation
+          </span>
+          <i data-lucide="chevron-right" class="chev"></i>
+        </a>
+        <div class="sub">
+          <a href="/docs?tab=backend" class="nav-item" data-tab="backend">
+            <i data-lucide="server" style="width:16px;height:16px"></i>
+            Backend
+          </a>
+          <a href="/docs?tab=frontend" class="nav-item" data-tab="frontend">
+            <i data-lucide="monitor" style="width:16px;height:16px"></i>
+            Frontend
+          </a>
+          <a href="/docs?tab=directus" class="nav-item" data-tab="directus">
+            <i data-lucide="database" style="width:16px;height:16px"></i>
+            Directus
+          </a>
+          <a href="/docs?tab=postgresql" class="nav-item" data-tab="postgresql">
+            <i data-lucide="hard-drive" style="width:16px;height:16px"></i>
+            PostgreSQL
+          </a>
+          <a href="/docs?tab=architecture" class="nav-item" data-tab="architecture">
+            <i data-lucide="git-branch" style="width:16px;height:16px"></i>
+            Architecture
+          </a>
+        </div>
+      </div>
+
+      <a href="/health" class="nav-item">
+        <i data-lucide="activity"></i>
+        Health Check
+      </a>
+    </nav>
+  </aside>
+  <div class="main">
