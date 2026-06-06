@@ -1,4 +1,4 @@
-// Landing page — hero, features showcase, and CTA for unauthenticated visitors
+// Landing page — hero welcome, features showcase, and footer
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -49,12 +49,12 @@ export default function Home() {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-28 sm:pt-28 sm:pb-36">
           <div className="max-w-2xl">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-tight">
-              School Management,{" "}
-              <span className="text-brand-500">Simplified</span>
+              Welcome to{" "}
+              <span className="text-brand-500">Ikonex Academy</span>
             </h1>
             <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-xl">
-              A modern platform for managing students, classes, assessments, and reports.
-              Streamline your academic workflow with Ikonex Academy.
+              This is the school management system for managing students, classes, assessments, and reports.
+              It streamline your academic workflow from one centralized platform.
             </p>
             <div className="flex gap-3 mt-8">
               {token ? (
@@ -91,7 +91,6 @@ export default function Home() {
               { icon: GraduationCap, title: "Subjects & Curriculum", desc: "Define subjects, assign them to classes, and manage your academic curriculum." },
               { icon: BarChart3, title: "Assessments & Scoring", desc: "Record exam and continuous assessment scores with flexible grading options." },
               { icon: Shield, title: "Report Cards", desc: "Generate detailed report cards and class performance reports with automated grading." },
-              { icon: Users, title: "Parent Portal", desc: "Keep parents informed with access to student performance and attendance data." },
             ].map((feature) => (
               <div key={feature.title} className="card p-6">
                 <div className="w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-900/50 flex items-center justify-center mb-4">
@@ -101,27 +100,6 @@ export default function Home() {
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-brand-500 dark:bg-brand-700">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl font-bold text-white">Ready to streamline your school?</h2>
-          <p className="mt-3 text-brand-100 dark:text-brand-200 max-w-lg mx-auto">
-            Get started with Ikonex Academy and transform the way you manage academic operations.
-          </p>
-          <div className="flex gap-3 justify-center mt-8">
-            {token ? (
-              <Link to="/dashboard" className="btn bg-white text-brand-700 border-white hover:bg-brand-50 px-6">
-                Go to Dashboard
-              </Link>
-            ) : (
-              <Link to="/signup" className="btn bg-white text-brand-700 border-white hover:bg-brand-50 px-6">
-                Get Started Now
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            )}
           </div>
         </div>
       </section>
