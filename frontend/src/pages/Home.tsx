@@ -1,3 +1,4 @@
+// Landing page — hero, features showcase, and CTA for unauthenticated visitors
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";

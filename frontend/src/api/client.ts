@@ -1,3 +1,4 @@
+// Axios instance — attaches auth token, handles 401 redirect
 import axios from "axios";
 
 const apiClient = axios.create({

@@ -1,3 +1,4 @@
+// Auth API — login, register, user management, role updates
 import apiClient from "./client";
 
 export interface LoginData {

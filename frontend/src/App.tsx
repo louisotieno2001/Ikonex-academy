@@ -1,3 +1,4 @@
+// Route definitions — maps URL paths to page components, wraps authenticated routes in Layout
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import Layout from "./components/Layout";

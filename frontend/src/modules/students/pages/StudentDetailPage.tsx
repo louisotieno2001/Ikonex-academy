@@ -7,6 +7,7 @@ import { ArrowLeft, GraduationCap, Calendar, Users, Phone, Mail, ClipboardCheck,
 import { toast } from "sonner";
 import { saveAs } from "../../../utils/saveAs";
 
+// Student profile — personal details, academic history, term performance, download report card
 export default function StudentDetail() {
   const { id } = useParams<{ id: string }>();
   

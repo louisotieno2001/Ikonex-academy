@@ -1,3 +1,4 @@
+// Dashboard layout — sidebar nav, header with breadcrumbs, theme toggle, mobile drawer
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { clsx } from "clsx";

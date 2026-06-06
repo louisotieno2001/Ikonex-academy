@@ -1,3 +1,4 @@
+// Reports routes — grading scales CRUD, student/class report data, PDF download
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');

@@ -1,3 +1,4 @@
+// System API — server status and activity logs
 import apiClient from "./client";
 
 export interface SystemStatus {

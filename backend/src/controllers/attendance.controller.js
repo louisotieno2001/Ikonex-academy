@@ -1,3 +1,4 @@
+// Attendance controller — list, mark (upsert), get dates, stats with teacher scoping
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
 const getTeacherClassIds = async (userId) => {

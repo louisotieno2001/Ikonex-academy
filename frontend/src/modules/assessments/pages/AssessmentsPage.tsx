@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { useState, useMemo } from "react";
 import { Plus, Pencil, Trash2, ClipboardCheck, X } from "lucide-react";
 
+// Assessment scores — record, edit, filter, and delete exam and continuous assessment marks
 export default function Assessments() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);

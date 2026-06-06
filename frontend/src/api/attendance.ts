@@ -1,3 +1,4 @@
+// Attendance API — fetch records, mark attendance, get stats
 import apiClient from "./client";
 
 export interface AttendanceRecord {

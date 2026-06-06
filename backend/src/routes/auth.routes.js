@@ -1,3 +1,4 @@
+// Auth routes — login, register, token refresh, profile, admin user management
 const express = require('express');
 const router = express.Router();
 const {

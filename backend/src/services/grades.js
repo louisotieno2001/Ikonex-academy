@@ -1,3 +1,4 @@
+// Grade calculation — loaded grading scales, percentage-to-grade mapping, position ranking
 const { getItems } = require('./directus.service');
 
 let cachedScales = null;

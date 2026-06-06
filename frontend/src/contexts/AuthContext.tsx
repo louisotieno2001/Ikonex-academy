@@ -1,3 +1,4 @@
+// Auth provider — manages user session, token persistence, and auth actions
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { authApi, LoginData, RegisterData } from "../api/auth";
 

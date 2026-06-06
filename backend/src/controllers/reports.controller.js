@@ -1,3 +1,4 @@
+// Reports controller — grading scales CRUD, student/class report computation, PDF export
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 const { determineGrade, calculatePosition, getGradingScales, invalidateScaleCache } = require('../services/grades');
 const { generateReportCard, generateClassReport } = require('../services/pdf');

@@ -1,3 +1,4 @@
+// Express app entry — middleware, CORS, routes, error handling
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');

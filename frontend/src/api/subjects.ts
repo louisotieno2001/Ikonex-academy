@@ -1,3 +1,4 @@
+// Subjects API — CRUD for subjects and assignment to class streams
 import apiClient from "./client";
 
 export interface Subject {

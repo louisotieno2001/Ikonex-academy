@@ -1,3 +1,4 @@
+// Class streams API — CRUD for class/grade groupings
 import apiClient from "./client";
 
 export interface ClassStream {

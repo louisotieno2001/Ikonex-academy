@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { GraduationCap, Clock, Mail, ArrowLeft } from "lucide-react";
 
+// Pending approval screen — shown after signup until an admin activates the account
 export default function ApprovalPage() {
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-brand-50 via-white to-accent-50 dark:from-ink-900 dark:via-ink-950 dark:to-ink-900">

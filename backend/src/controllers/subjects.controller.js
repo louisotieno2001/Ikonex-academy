@@ -1,3 +1,4 @@
+// Subjects controller — CRUD, assign/unassign to class streams, teacher filtered views
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
 const getTeacherClassIds = async (userId) => {

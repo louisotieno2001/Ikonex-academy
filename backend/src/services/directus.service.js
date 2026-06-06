@@ -1,3 +1,4 @@
+// Directus API client — wraps CRUD operations and flattens nested params
 const axios = require('axios');
 const config = require('../config');
 

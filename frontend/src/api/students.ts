@@ -1,3 +1,4 @@
+// Students API — CRUD operations for student records
 import apiClient from "./client";
 
 export interface Student {

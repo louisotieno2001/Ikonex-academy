@@ -8,6 +8,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { toast } from "sonner";
 import { saveAs } from "../../../utils/saveAs";
 
+// Reports module — class analysis, individual report cards, and grading scale configuration
 export default function Reports() {
   const queryClient = useQueryClient();
   const { user } = useAuth();

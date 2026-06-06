@@ -16,6 +16,7 @@ const LEVEL_COLORS = {
   error: "bg-red-100 text-red-700 border-red-200",
 };
 
+// System audit logs — filterable event log with levels and auto-refresh
 export default function LogsPage() {
   const [levelFilter, setLevelFilter] = useState<string>("");
   const [actionFilter, setActionFilter] = useState<string>("");

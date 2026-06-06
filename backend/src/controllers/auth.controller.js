@@ -1,3 +1,4 @@
+// Auth controller — login, register, token refresh, user management (CRUD, roles, suspend)
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('../config');

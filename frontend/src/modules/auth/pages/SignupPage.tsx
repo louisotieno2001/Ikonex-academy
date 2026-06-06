@@ -11,6 +11,7 @@ interface SignupForm {
   password: string;
 }
 
+// Registration form — creates account then redirects to approval pending page
 export default function SignupPage() {
   const navigate = useNavigate();
   const [error, setError] = useState("");

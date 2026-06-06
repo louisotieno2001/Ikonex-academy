@@ -1,3 +1,4 @@
+// System routes — health status (authenticated) and audit logs (admin only)
 const { Router } = require('express');
 const { authenticate, authorize } = require('../middleware/auth');
 const { getStatus, getLogs } = require('../controllers/system.controller');

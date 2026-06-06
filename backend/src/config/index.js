@@ -1,3 +1,4 @@
+// App configuration — ports, Directus, JWT, CORS, bcrypt
 require('dotenv').config();
 
 const config = {

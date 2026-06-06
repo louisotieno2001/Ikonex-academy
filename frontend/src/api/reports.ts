@@ -1,3 +1,4 @@
+// Reports API — grading scales, student/class reports, PDF export
 import apiClient from "./client";
 
 export interface GradingScale {

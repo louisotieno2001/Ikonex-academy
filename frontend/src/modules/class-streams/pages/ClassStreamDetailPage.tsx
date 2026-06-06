@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { toast } from "sonner";
 import { saveAs } from "../../../utils/saveAs";
 
+// Class stream detail — subject performance chart, student leaderboard, assigned subjects
 export default function ClassStreamDetail() {
   const { id } = useParams<{ id: string }>();
   

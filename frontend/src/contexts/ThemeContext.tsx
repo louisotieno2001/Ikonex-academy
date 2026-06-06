@@ -1,3 +1,4 @@
+// Theme provider — persists dark/light preference and toggles class on root
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 type Theme = 'light' | 'dark'

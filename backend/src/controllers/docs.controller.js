@@ -1,3 +1,4 @@
+// Docs controller — renders EJS dashboard view and documentation page
 const { query } = require('../services/directus.service');
 
 const getIndex = async (req, res) => {

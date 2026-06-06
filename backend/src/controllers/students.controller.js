@@ -1,3 +1,4 @@
+// Students controller — CRUD with teacher role scoping (only own class)
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
 const getTeacherClassIds = async (userId) => {

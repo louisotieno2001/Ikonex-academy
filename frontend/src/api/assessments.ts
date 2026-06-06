@@ -1,3 +1,4 @@
+// Assessments API — CRUD for exam and continuous assessment scores
 import apiClient from "./client";
 
 export interface Assessment {

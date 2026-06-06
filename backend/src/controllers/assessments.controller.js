@@ -1,3 +1,4 @@
+// Assessments controller — CRUD for exam/CA scores with duplicate and role checks
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
 const getTeacherClassIds = async (userId) => {

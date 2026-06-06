@@ -1,3 +1,4 @@
+// Docs routes — EJS dashboard landing page and API documentation
 const express = require('express');
 const router = express.Router();
 const { getIndex, getDocs } = require('../controllers/docs.controller');

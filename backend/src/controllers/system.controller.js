@@ -1,3 +1,4 @@
+// System controller — status endpoint, log writer, filtered log viewer
 const { getItems, getItem, createItem } = require('../services/directus.service');
 const { query } = require('../services/directus.service');
 const config = require('../config');

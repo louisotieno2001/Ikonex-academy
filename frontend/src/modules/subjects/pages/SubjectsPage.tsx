@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2, BookOpen, X, Check, ShieldCheck, Filter } from "l
 import { useAuth } from "../../../contexts/AuthContext";
 import { toast } from "sonner";
 
+// Subjects management — CRUD for curriculum subjects and assignment to class streams
 export default function Subjects() {
   const queryClient = useQueryClient();
   const { user } = useAuth();

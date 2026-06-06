@@ -1,3 +1,4 @@
+// App entry point — mounts React, router, auth, theme, and query client
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";

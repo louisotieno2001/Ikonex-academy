@@ -7,6 +7,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { Check, X, Save, Calendar, Filter, History, ChevronDown, ChevronUp, Search, Shield } from "lucide-react";
 import { toast } from "sonner";
 
+// Attendance marking — select class/date, mark present/absent per student, view history
 export default function AttendancePage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();

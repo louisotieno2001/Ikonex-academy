@@ -1,3 +1,4 @@
+// PDF generation — individual report cards and class performance reports via PDFKit
 const PDFDocument = require('pdfkit');
 
 const BRAND = '#6366F1';

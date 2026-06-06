@@ -1,3 +1,4 @@
+// Trigger a file download from a Blob — used for PDF report exports
 export function saveAs(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

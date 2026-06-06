@@ -1,3 +1,4 @@
+// Auth middleware — JWT verification, role-based access control
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 

@@ -1,3 +1,4 @@
+// Class streams controller — CRUD with student counts, teacher assignment, role gating
 const { getItems, getItem, createItem, updateItem, deleteItem } = require('../services/directus.service');
 
 const getTeacherClassIds = async (userId) => {

@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { Plus, Pencil, Trash2, Users, X } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 
+// Class streams list — CRUD for class/grade groupings with student and subject counts
 export default function ClassStreams() {
   const queryClient = useQueryClient();
   const { user } = useAuth();

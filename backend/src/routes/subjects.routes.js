@@ -1,3 +1,4 @@
+// Subjects routes — CRUD endpoints plus assign/unassign to class streams
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');

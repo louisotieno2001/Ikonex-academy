@@ -11,6 +11,7 @@ import { Users, GraduationCap, BookOpen, ArrowRight, Shield, Award, TrendingUp, 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useAuth } from "../../../contexts/AuthContext";
 
+// Main dashboard — overview stats, class distribution chart, teacher overview, system status
 export default function Dashboard() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";

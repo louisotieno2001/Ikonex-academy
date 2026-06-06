@@ -9,6 +9,7 @@ interface LoginForm {
   password: string;
 }
 
+// Login form — validates credentials and redirects to dashboard or approval page
 export default function LoginPage() {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();

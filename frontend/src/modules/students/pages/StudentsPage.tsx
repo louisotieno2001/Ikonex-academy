@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Plus, Pencil, Trash2, Search, GraduationCap, X, Filter } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 
+// Student directory — list, filter by class, register new, edit, and delete students
 export default function Students() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
