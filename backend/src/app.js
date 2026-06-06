@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
@@ -26,22 +25,26 @@ app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev'));
 // CORS configuration
 console.log('CORS Origins allowed:', config.cors.origin);
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    
-    // Check if origin matches any in our allowed list
-    if (config.cors.origin.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log('CORS rejected origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-};
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
 
-app.use(cors(corsOptions));
+  if (!origin || config.cors.origin.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
+    res.setHeader('Vary', 'Origin');
+
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  next();
+});
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
