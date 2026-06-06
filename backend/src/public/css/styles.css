@@ -32,13 +32,14 @@ tr:hover td{background:#1a1b1e}
 .sidebar{position:sticky;top:0;width:270px;height:100vh;overflow-y:auto;background:#212529;border-right:1px solid #495057;flex-shrink:0;z-index:40}
 .sidebar-logo{display:flex;align-items:center;gap:0.65rem;padding:1rem 1.25rem;border-bottom:1px solid #343a40}
 .sidebar-logo .logo-box{width:34px;height:34px;background:linear-gradient(135deg,#0d7377,#34d399);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.sidebar-logo .logo-img{width:20px;height:20px;filter:brightness(0) invert(1)}
 .sidebar-logo h1{font-size:0.95rem;font-weight:700;color:#dee2e6}
 .sidebar-logo span{font-size:.65rem;color:#6b7280;display:block;margin-top:-1px}
 .sidebar nav{padding:0.5rem 0.75rem}
 .sidebar .nav-item{display:flex;align-items:center;gap:0.65rem;padding:0.55rem 0.75rem;border-radius:6px;font-size:.85rem;font-weight:500;color:#adb5bd;cursor:pointer;transition:all .15s;margin-bottom:1px}
 .sidebar .nav-item:hover{background:#343a40;color:#dee2e6;text-decoration:none}
 .sidebar .nav-item.active{background:#0d737733;color:#34d399}
-.sidebar .nav-item .lucide{width:18px;height:18px;flex-shrink:0}
+.sidebar .nav-item [class*=" fa-"]{font-size:16px;width:1.25em;text-align:center;flex-shrink:0}
 .sidebar .sec{margin-bottom:2px}
 .sidebar .sec > .nav-item{justify-content:space-between}
 .sidebar .sec > .nav-item .chev{transition:transform .2s;width:14px;height:14px}
@@ -74,7 +75,7 @@ tr:hover td{background:#1a1b1e}
 .card h3{font-size:1rem;font-weight:700;margin-bottom:.5rem}
 .card p{font-size:.85rem;color:#6b7280;margin-bottom:0}
 .card .icon-wrap{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:.85rem}
-.card .icon-wrap .lucide{width:20px;height:20px}
+.card .icon-wrap [class*=" fa-"]{font-size:20px;width:1.25em;text-align:center}
 
 /* Status grid */
 .status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem}
@@ -119,7 +120,7 @@ tr:hover td{background:#1a1b1e}
 
 /* Mobile */
 .mobile-toggle{display:none;background:none;border:none;color:#adb5bd;cursor:pointer;padding:4px}
-.mobile-toggle .lucide{width:22px;height:22px}
+.mobile-toggle [class*=" fa-"]{font-size:22px;width:1.25em;text-align:center}
 
 @media(max-width:768px){
   .sidebar{position:fixed;left:-280px;transition:left .25s;z-index:50}
